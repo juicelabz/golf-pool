@@ -8,6 +8,7 @@ import {
 	Users,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { NotAuthorized } from "@/components/NotAuthorized";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/admin/users")({
 	component: UserManagement,
 	beforeLoad: async () => {
 		const result = await requireRole(["admin"]);
-		if (!result.authenticated || !result.authorized) {
+		if (!result.authenticated) {
 			return {
 				redirectTo: "/login",
 			};
@@ -28,11 +29,16 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function UserManagement() {
+	const { authorized } = Route.useRouteContext();
 	const [users, setUsers] = useState<any[]>([]);
 	const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
+
+	if (authorized === false) {
+		return <NotAuthorized />;
+	}
 
 	const fetchUsers = useCallback(async () => {
 		try {
@@ -58,8 +64,11 @@ function UserManagement() {
 	}, []);
 
 	useEffect(() => {
+		if (authorized === false) {
+			return;
+		}
 		fetchUsers();
-	}, [fetchUsers]);
+	}, [authorized, fetchUsers]);
 
 	useEffect(() => {
 		if (searchQuery) {

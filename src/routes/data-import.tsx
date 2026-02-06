@@ -1,19 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle, Download, Upload } from "lucide-react";
 import { useState } from "react";
+import { NotAuthorized } from "@/components/NotAuthorized";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/data-import")({
 	component: DataImport,
+	beforeLoad: async () => {
+		const result = await requireRole(["admin", "data"]);
+		if (!result.authenticated) {
+			return {
+				redirectTo: "/login",
+			};
+		}
+		return result;
+	},
 });
 
 function DataImport() {
+	const { authorized } = Route.useRouteContext();
 	const [isDragging, setIsDragging] = useState(false);
 	const [uploadStatus, setUploadStatus] = useState<
 		"idle" | "uploading" | "success" | "error"
 	>("idle");
 	const [uploadProgress, setUploadProgress] = useState(0);
+
+	if (authorized === false) {
+		return <NotAuthorized />;
+	}
 
 	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault();

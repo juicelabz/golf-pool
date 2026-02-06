@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { RefreshCw, Shield, ShieldAlert, Trash2, User, X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
+import { NotAuthorized } from "@/components/NotAuthorized";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/admin/users/$userId")({
 	component: UserDetail,
 	beforeLoad: async () => {
 		const result = await requireRole(["admin"]);
-		if (!result.authenticated || !result.authorized) {
+		if (!result.authenticated) {
 			return {
 				redirectTo: "/login",
 			};
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/admin/users/$userId")({
 });
 
 function UserDetail() {
+	const { authorized } = Route.useRouteContext();
 	const { user, error } = Route.useLoaderData();
 	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +62,10 @@ function UserDetail() {
 	const [selectedRole, setSelectedRole] = useState(user?.role || "user");
 	const [banReason, setBanReason] = useState("");
 	const [newPassword, setNewPassword] = useState("");
+
+	if (authorized === false) {
+		return <NotAuthorized />;
+	}
 
 	if (error) {
 		return (

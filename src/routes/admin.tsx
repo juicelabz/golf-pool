@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CreditCard, Database, LogOut, Users } from "lucide-react";
+import { NotAuthorized } from "../components/NotAuthorized";
 import { Button } from "../components/ui/button";
 import {
 	Card,
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/admin")({
 	component: Admin,
 	beforeLoad: async () => {
 		const result = await requireRole(["admin", "data"]);
-		if (!result.authenticated || !result.authorized) {
+		if (!result.authenticated) {
 			return {
 				redirectTo: "/login",
 			};
@@ -24,6 +25,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 function Admin() {
+	const { authorized, user } = Route.useRouteContext();
+	const role = (user as { role?: string } | null)?.role ?? "user";
+	const isDataRole = role === "data";
+	const showAdminCards = role === "admin";
+
+	if (authorized === false) {
+		return <NotAuthorized />;
+	}
+
 	const handleLogout = async () => {
 		await authClient.signOut();
 		window.location.href = "/login";
@@ -61,71 +71,80 @@ function Admin() {
 					</div>
 				</div>
 
-				<div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-					<Card className="scorecard">
-						<CardHeader className="border-b border-border/70 bg-background/20">
-							<CardTitle className="text-lg font-black flex items-center gap-2">
-								<span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-primary/25">
-									<CreditCard className="size-4 text-primary" />
-								</span>
-								Payment status
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="p-6">
-							<p className="text-sm text-muted-foreground mb-4">
-								Track member payments and status.
-							</p>
-							<Button className="w-full h-10 font-semibold">
-								Manage payments
-							</Button>
-						</CardContent>
-					</Card>
+				<div
+					className={`mt-10 grid grid-cols-1 gap-6 ${
+						isDataRole ? "md:grid-cols-1" : "md:grid-cols-3"
+					}`}
+				>
+					{showAdminCards && (
+						<Card className="scorecard">
+							<CardHeader className="border-b border-border/70 bg-background/20">
+								<CardTitle className="text-lg font-black flex items-center gap-2">
+									<span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-primary/25">
+										<CreditCard className="size-4 text-primary" />
+									</span>
+									Payment status
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="p-6">
+								<p className="text-sm text-muted-foreground mb-4">
+									Track member payments and status.
+								</p>
+								<Button className="w-full h-10 font-semibold">
+									Manage payments
+								</Button>
+							</CardContent>
+						</Card>
+					)}
 
-					<Card className="scorecard">
-						<CardHeader className="border-b border-border/70 bg-background/20">
-							<CardTitle className="text-lg font-black flex items-center gap-2">
-								<span className="inline-flex size-8 items-center justify-center rounded-lg bg-background/25 ring-1 ring-border/60">
-									<Users className="size-4 text-foreground" />
-								</span>
-								User management
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="p-6">
-							<p className="text-sm text-muted-foreground mb-4">
-								View and manage all users, roles, and access.
-							</p>
-							<Link to="/admin/users">
+					{showAdminCards && (
+						<Card className="scorecard">
+							<CardHeader className="border-b border-border/70 bg-background/20">
+								<CardTitle className="text-lg font-black flex items-center gap-2">
+									<span className="inline-flex size-8 items-center justify-center rounded-lg bg-background/25 ring-1 ring-border/60">
+										<Users className="size-4 text-foreground" />
+									</span>
+									User management
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="p-6">
+								<p className="text-sm text-muted-foreground mb-4">
+									View and manage all users, roles, and access.
+								</p>
+								<Button
+									asChild
+									variant="outline"
+									className="w-full h-10 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+								>
+									<Link to="/admin/users">Manage users</Link>
+								</Button>
+							</CardContent>
+						</Card>
+					)}
+
+					{showAdminCards && (
+						<Card className="scorecard">
+							<CardHeader className="border-b border-border/70 bg-background/20">
+								<CardTitle className="text-lg font-black flex items-center gap-2">
+									<span className="inline-flex size-8 items-center justify-center rounded-lg bg-background/25 ring-1 ring-border/60">
+										<Users className="size-4 text-foreground" />
+									</span>
+									Roster management
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="p-6">
+								<p className="text-sm text-muted-foreground mb-4">
+									View and edit member rosters.
+								</p>
 								<Button
 									variant="outline"
 									className="w-full h-10 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
 								>
-									Manage users
+									Manage rosters
 								</Button>
-							</Link>
-						</CardContent>
-					</Card>
-
-					<Card className="scorecard">
-						<CardHeader className="border-b border-border/70 bg-background/20">
-							<CardTitle className="text-lg font-black flex items-center gap-2">
-								<span className="inline-flex size-8 items-center justify-center rounded-lg bg-background/25 ring-1 ring-border/60">
-									<Users className="size-4 text-foreground" />
-								</span>
-								Roster management
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="p-6">
-							<p className="text-sm text-muted-foreground mb-4">
-								View and edit member rosters.
-							</p>
-							<Button
-								variant="outline"
-								className="w-full h-10 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
-							>
-								Manage rosters
-							</Button>
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
+					)}
 
 					<Card className="scorecard">
 						<CardHeader className="border-b border-border/70 bg-background/20">
@@ -140,7 +159,9 @@ function Admin() {
 							<p className="text-sm text-muted-foreground mb-4">
 								Upload CSV files with tournament results.
 							</p>
-							<Button className="w-full h-10 font-semibold">Import data</Button>
+							<Button asChild className="w-full h-10 font-semibold">
+								<Link to="/data-import">Import data</Link>
+							</Button>
 						</CardContent>
 					</Card>
 				</div>
