@@ -8,9 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/session";
 
 export const Route = createFileRoute("/signup")({
 	component: Signup,
+	beforeLoad: async () => {
+		const result = await requireAuth();
+		if (result.authenticated) {
+			return {
+				redirectTo: "/leaderboard",
+			};
+		}
+		return result;
+	},
 });
 
 function Signup() {
@@ -157,7 +167,7 @@ function Signup() {
 
 							{error && (
 								<Alert variant="destructive">
-									<AlertTitle>Not implemented</AlertTitle>
+									<AlertTitle>Registration failed</AlertTitle>
 									<AlertDescription>{error}</AlertDescription>
 								</Alert>
 							)}

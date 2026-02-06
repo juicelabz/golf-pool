@@ -8,9 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/session";
 
 export const Route = createFileRoute("/login")({
 	component: Login,
+	beforeLoad: async () => {
+		const result = await requireAuth();
+		if (result.authenticated) {
+			return {
+				redirectTo: "/leaderboard",
+			};
+		}
+		return result;
+	},
 });
 
 function Login() {
@@ -35,12 +45,15 @@ function Login() {
 			});
 
 			if (result.error) {
-				setError(result.error.message || "Invalid email or password.");
+				setError(
+					result.error.message ||
+						"We couldn't sign you in. Check your email and password.",
+				);
 			} else {
-				router.navigate({ to: "/admin" });
+				router.navigate({ to: "/leaderboard" });
 			}
 		} catch (err: any) {
-			setError(err.message || "Login failed. Please try again.");
+			setError(err.message || "Sign-in failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}
@@ -104,7 +117,7 @@ function Login() {
 
 							{error && (
 								<Alert variant="destructive">
-									<AlertTitle>Not implemented</AlertTitle>
+									<AlertTitle>Sign-in failed</AlertTitle>
 									<AlertDescription>{error}</AlertDescription>
 								</Alert>
 							)}
