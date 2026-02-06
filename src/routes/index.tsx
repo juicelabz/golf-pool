@@ -1,118 +1,149 @@
-import { createFileRoute } from '@tanstack/react-router'
-import {
-  Zap,
-  Server,
-  Route as RouteIcon,
-  Shield,
-  Waves,
-  Sparkles,
-} from 'lucide-react'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Flag, Settings, Trophy } from "lucide-react";
+import { Button } from "../components/ui/button";
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute("/")({
+	component: Home,
+});
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: 'Powerful Server Functions',
-      description:
-        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
-    },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: 'Flexible Server Side Rendering',
-      description:
-        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
-    },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: 'API Routes',
-      description:
-        'Build type-safe API endpoints alongside your application. No separate backend needed.',
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: 'Strongly Typed Everything',
-      description:
-        'End-to-end type safety from server to client. Catch errors before they reach production.',
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: 'Full Streaming Support',
-      description:
-        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: 'Next Generation Ready',
-      description:
-        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
-    },
-  ]
+function Home() {
+	return (
+		<div className="min-h-dvh">
+			<div className="mx-auto max-w-6xl px-6 pt-16 pb-16">
+				<div className="scorecard golf-hero rounded-[calc(var(--radius)+0.5rem)]">
+					<div className="relative px-6 py-12 md:px-12 md:py-16">
+						<div className="inline-flex items-center gap-2 rounded-full flag-chip px-3 py-1 text-xs font-semibold text-foreground/90 backdrop-blur">
+							<Flag className="size-3.5 text-[oklch(0.66_0.19_28)]" />
+							Live scoring • Real-time updates
+						</div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
-            >
-              Documentation
-            </a>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{' '}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
-        </div>
-      </section>
+						<h1 className="mt-6 text-balance text-5xl md:text-7xl font-black tracking-tight">
+							Ytown Invitational
+						</h1>
 
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
-  )
+						<p className="mt-3 max-w-2xl text-pretty text-base md:text-lg text-muted-foreground">
+							2026 Fantasy Golf Pool — standings, rosters, and tournament
+							results in one clubhouse.
+						</p>
+
+						<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+							<Button asChild className="h-10 px-5 font-semibold">
+								<Link to="/leaderboard">
+									<Trophy className="size-4" />
+									View leaderboard
+								</Link>
+							</Button>
+
+							<Button
+								asChild
+								variant="outline"
+								className="h-10 px-5 border-border/80 bg-background/30 hover:bg-background/40"
+							>
+								<Link to="/admin">
+									<Settings className="size-4" />
+									Admin portal
+								</Link>
+							</Button>
+						</div>
+
+						<div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+							<div className="rounded-xl border border-border/70 bg-background/20 px-5 py-4 backdrop-blur">
+								<div className="text-xs font-semibold text-muted-foreground">
+									Active members
+								</div>
+								<div className="mt-1 text-2xl font-black tracking-tight">
+									108
+								</div>
+							</div>
+							<div className="rounded-xl border border-border/70 bg-background/20 px-5 py-4 backdrop-blur">
+								<div className="text-xs font-semibold text-muted-foreground">
+									PGA golfers
+								</div>
+								<div className="mt-1 text-2xl font-black tracking-tight">
+									119
+								</div>
+							</div>
+							<div className="rounded-xl border border-border/70 bg-background/20 px-5 py-4 backdrop-blur">
+								<div className="text-xs font-semibold text-muted-foreground">
+									Tournaments
+								</div>
+								<div className="mt-1 text-2xl font-black tracking-tight">
+									34
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+					<Link
+						to="/leaderboard"
+						className="group rounded-2xl border border-border/80 bg-card/40 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-card/55 hover:shadow-2xl hover:shadow-black/30"
+					>
+						<div className="p-6">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<div className="inline-flex items-center gap-2 rounded-full bg-background/25 px-3 py-1 text-xs font-semibold text-muted-foreground">
+										<Trophy className="size-3.5 text-primary" />
+										Standings
+									</div>
+									<h2 className="mt-3 text-2xl font-black tracking-tight">
+										Live leaderboard
+									</h2>
+									<p className="mt-2 text-sm text-muted-foreground">
+										Segment totals, overall points, and the race to the top.
+									</p>
+								</div>
+								<div className="rounded-xl border border-border/70 bg-background/20 p-3">
+									<div className="h-10 w-10 rounded-lg bg-primary/15 ring-1 ring-primary/25" />
+								</div>
+							</div>
+							<div className="mt-5">
+								<div className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors group-hover:bg-primary/90">
+									Open leaderboard
+								</div>
+							</div>
+						</div>
+					</Link>
+
+					<Link
+						to="/admin"
+						className="group rounded-2xl border border-border/80 bg-card/40 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-card/55 hover:shadow-2xl hover:shadow-black/30"
+					>
+						<div className="p-6">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<div className="inline-flex items-center gap-2 rounded-full bg-background/25 px-3 py-1 text-xs font-semibold text-muted-foreground">
+										<Settings className="size-3.5 text-[oklch(0.66_0.19_28)]" />
+										Commissioner tools
+									</div>
+									<h2 className="mt-3 text-2xl font-black tracking-tight">
+										Clubhouse admin
+									</h2>
+									<p className="mt-2 text-sm text-muted-foreground">
+										Manage rosters, payments, and data operations.
+									</p>
+								</div>
+								<div className="rounded-xl border border-border/70 bg-background/20 p-3">
+									<div className="h-10 w-10 rounded-lg bg-[oklch(0.66_0.19_28/0.14)] ring-1 ring-[oklch(0.66_0.19_28/0.25)]" />
+								</div>
+							</div>
+							<div className="mt-5">
+								<div className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold shadow-sm transition-colors group-hover:bg-background/90">
+									Enter admin
+								</div>
+							</div>
+						</div>
+					</Link>
+				</div>
+
+				<div className="mt-10 text-center text-xs text-muted-foreground">
+					<p className="leading-relaxed">
+						Keep it honest: points are earned on the course, not in the
+						comments.
+					</p>
+				</div>
+			</div>
+		</div>
+	);
 }

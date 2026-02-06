@@ -12,4 +12,8 @@ count.txt
 .vinxi
 todos.json
 
+# Data files
 data/
+*.db
+
+whitelist.json
