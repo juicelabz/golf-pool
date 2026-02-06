@@ -2,6 +2,7 @@
 - Use `requireRole` inside `beforeLoad` with redirect only when unauthenticated, and render `NotAuthorized` from `Route.useRouteContext()` for role gating.
 - For public auth routes (`/login`, `/signup`), use `requireAuth` in `beforeLoad` and redirect authenticated users to `/leaderboard`.
 - Server functions return `{ success: false, error: { code, message } }` for auth failures so the UI can handle unauthorized states consistently.
+- Global auth protection lives in `src/routes/__root.tsx` `beforeLoad`, skipping `/login` and `/signup` and sending a `redirect` query param back to `/login`.
 
 ## 2026-02-06 - golf-pool-3cj.5
 - Implemented role gating for admin routes and data import with a shared NotAuthorized screen.
@@ -31,4 +32,11 @@
 - Files changed: .ralph-tui/progress.md
 - **Learnings:**
   - None.
+---
+
+## 2026-02-06 - golf-pool-3cj.4
+- Added global auth gating in the root route and preserved original route redirects on login.
+- Files changed: src/routes/__root.tsx, src/routes/login.tsx, .ralph-tui/progress.md
+- **Learnings:**
+  - Root `beforeLoad` is the right place to enforce app-wide auth while letting `/login` and `/signup` stay public.
 ---

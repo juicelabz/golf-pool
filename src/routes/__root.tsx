@@ -3,10 +3,27 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import Header from "../components/Header";
+import { requireAuth } from "../lib/session";
 
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
+	beforeLoad: async ({ location }) => {
+		if (location.pathname === "/login" || location.pathname === "/signup") {
+			return;
+		}
+
+		const result = await requireAuth();
+		if (!result.authenticated) {
+			const redirectPath = `${location.pathname}${location.search ?? ""}${
+				location.hash ?? ""
+			}`;
+			return {
+				redirectTo: `/login?redirect=${encodeURIComponent(redirectPath)}`,
+			};
+		}
+		return result;
+	},
 	head: () => ({
 		meta: [
 			{

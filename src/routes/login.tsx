@@ -12,6 +12,9 @@ import { requireAuth } from "@/lib/session";
 
 export const Route = createFileRoute("/login")({
 	component: Login,
+	validateSearch: (search: Record<string, unknown>) => ({
+		redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+	}),
 	beforeLoad: async () => {
 		const result = await requireAuth();
 		if (result.authenticated) {
@@ -27,6 +30,7 @@ function Login() {
 	const router = useRouter();
 	const emailId = useId();
 	const passwordId = useId();
+	const { redirect } = Route.useSearch();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -50,7 +54,9 @@ function Login() {
 						"We couldn't sign you in. Check your email and password.",
 				);
 			} else {
-				router.navigate({ to: "/leaderboard" });
+				const redirectTo =
+					redirect && redirect.startsWith("/") ? redirect : "/leaderboard";
+				router.navigate({ to: redirectTo });
 			}
 		} catch (err: any) {
 			setError(err.message || "Sign-in failed. Please try again.");
