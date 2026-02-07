@@ -1,0 +1,15 @@
+time=2026-02-06T22:20:29.505-05:00 level=INFO msg="Daemon started" interval=5s auto_commit=false auto_push=false
+time=2026-02-06T22:20:29.506-05:00 level=INFO msg="using database" path=/Users/codykuykendall/workspace/golf-pool/.beads/beads.db
+time=2026-02-06T22:20:29.553-05:00 level=INFO msg="database opened" path=/Users/codykuykendall/workspace/golf-pool/.beads/beads.db backend=sqlite freshness_checking=true
+time=2026-02-06T22:20:29.553-05:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-02-06T22:20:29.553-05:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-02-06T22:20:29.583-05:00 level=INFO msg="Repository fingerprint validated" repo_id=49f92e78
+time=2026-02-06T22:20:29.584-05:00 level=INFO msg="starting RPC server" socket=/Users/codykuykendall/workspace/golf-pool/.beads/bd.sock
+time=2026-02-06T22:20:29.584-05:00 level=ERROR msg="RPC server error" error="failed to initialize RPC listener: listen unix /Users/codykuykendall/workspace/golf-pool/.beads/bd.sock: bind: operation not permitted"
+time=2026-02-06T22:20:29.584-05:00 level=ERROR msg="RPC server failed to start" error="failed to initialize RPC listener: listen unix /Users/codykuykendall/workspace/golf-pool/.beads/bd.sock: bind: operation not permitted"
+time=2026-02-06T22:47:19.541-05:00 level=INFO msg="Daemon started" interval=5s auto_commit=false auto_push=false
+time=2026-02-06T22:47:19.543-05:00 level=INFO msg="using database" path=/Users/codykuykendall/workspace/golf-pool/.beads/beads.db
+time=2026-02-06T22:47:19.598-05:00 level=INFO msg="database opened" path=/Users/codykuykendall/workspace/golf-pool/.beads/beads.db backend=sqlite freshness_checking=true
+time=2026-02-06T22:47:19.598-05:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-02-06T22:47:19.598-05:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-02-06T22:47:19.614-05:00 level=ERROR msg="repository fingerprint validation failed" error="\nDATABASE MISMATCH DETECTED!\n\nThis database belongs to a different repository:\n  Database repo ID:  49f92e78\n  Current repo ID:   504a1ade\n\nThis usually means:\n  1. You copied a .beads directory from another repo (don't do this!)\n  2. Git remote URL changed (run 'bd migrate --update-repo-id')\n  3. Database corruption\n  4. bd was upgraded and URL canonicalization changed\n\n⚠️  CRITICAL: This mismatch can cause beads to incorrectly delete issues during sync!\n   The git-history-backfill mechanism may treat your local issues as deleted\n   because they don't exist in the remote repository's history.\n\nSolutions:\n  - If remote URL changed: bd migrate --update-repo-id\n  - If bd was upgraded: bd migrate --update-repo-id\n  - If wrong database: rm -rf .beads && bd init\n  - If correct database: BEADS_IGNORE_REPO_MISMATCH=1 bd daemon\n    (Warning: This can cause data corruption and unwanted deletions across clones!)\n"

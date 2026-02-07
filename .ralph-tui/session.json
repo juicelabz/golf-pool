@@ -3,7 +3,7 @@
   "sessionId": "1cf359e4-68e4-4253-86f8-257c0ed51b15",
   "status": "completed",
   "startedAt": "2026-02-06T05:33:22.814Z",
-  "updatedAt": "2026-02-06T14:15:54.035Z",
+  "updatedAt": "2026-02-06T15:00:15.936Z",
   "currentIteration": 0,
   "maxIterations": 10,
   "tasksCompleted": 0,
@@ -61,8 +61,6 @@
   "iterations": [],
   "skippedTaskIds": [],
   "cwd": "/Users/codykuykendall/workspace/golf-pool",
-  "activeTaskIds": [
-    "golf-pool-3cj.7"
-  ],
+  "activeTaskIds": [],
   "subagentPanelVisible": false
 }
