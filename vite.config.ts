@@ -13,6 +13,13 @@ const config = defineConfig({
 		tanstackStart(),
 		tailwindcss(),
 	],
+	test: {
+		globals: true,
+		environment: "jsdom",
+		setupFiles: ["./src/test/setup.ts"],
+		include: ["src/**/*.{test,spec}.{ts,tsx}"],
+		passWithNoTests: true,
+	},
 });
 
 export default config;
