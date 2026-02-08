@@ -10,3 +10,4 @@
 last-touched
 *.tmp
 export-state/
+sync-state.json
