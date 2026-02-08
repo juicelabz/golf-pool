@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { requireAuth } from "@/lib/session";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/signup")({
 	component: Signup,
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/signup")({
 
 function Signup() {
 	const router = useRouter();
+	const { refetch } = useAuth();
 	const nameId = useId();
 	const emailId = useId();
 	const passwordId = useId();
@@ -61,16 +63,14 @@ function Signup() {
 			});
 
 			if (result.error) {
-				setError(
-					result.error.message ||
-						"Failed to create account. Your email may not be whitelisted.",
-				);
+				setError("Not allowed.");
 			} else {
 				setError(null);
-				router.navigate({ to: "/login" });
+				await refetch();
+				router.navigate({ to: "/leaderboard" });
 			}
-		} catch (err: any) {
-			setError(err.message || "An error occurred. Please try again.");
+		} catch {
+			setError("Not allowed.");
 		} finally {
 			setLoading(false);
 		}

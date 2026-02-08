@@ -4,6 +4,7 @@ import { APIError } from "better-auth/api";
 import { admin as adminPlugin } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "./db";
+import { buildWhitelistSet, normalizeEmail } from "./whitelist";
 
 // Load whitelist from JSON
 let cachedWhitelist: Set<string> | null = null;
@@ -17,13 +18,7 @@ async function loadWhitelist(): Promise<Set<string>> {
 		const whitelist = await whitelistFile.json();
 
 		// Extract emails from whitelist
-		cachedWhitelist = new Set(
-			whitelist
-				.filter(
-					(user: { email: string }) => user.email && user.email.trim() !== "",
-				)
-				.map((user: { email: string }) => user.email.trim().toLowerCase()),
-		);
+		cachedWhitelist = buildWhitelistSet(whitelist);
 
 		console.log(`✅ Loaded ${cachedWhitelist.size} whitelisted emails`);
 		return cachedWhitelist;
@@ -65,13 +60,12 @@ export const auth = betterAuth({
 		user: {
 			create: {
 				before: async (user: { email?: string }) => {
-					const email = user.email?.toLowerCase();
+					const email = normalizeEmail(user.email);
 					const whitelist = await loadWhitelist();
 
 					if (!email || !whitelist.has(email)) {
 						throw new APIError("FORBIDDEN", {
-							message:
-								"This email address is not authorized to access the Golf Pool. Please contact the administrator.",
+							message: "Not allowed.",
 						});
 					}
 
