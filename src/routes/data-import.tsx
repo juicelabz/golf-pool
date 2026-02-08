@@ -1,9 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, CheckCircle, Download, Upload } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle,
+	Download,
+	History,
+	Upload,
+} from "lucide-react";
 import { useState } from "react";
 import { NotAuthorized } from "@/components/NotAuthorized";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/data-import")({
@@ -64,266 +72,249 @@ function DataImport() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-			<div className="relative overflow-hidden">
-				{/* Animated background elements */}
-				<div className="absolute inset-0">
-					<div className="absolute top-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-					<div className="absolute bottom-20 left-20 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl animate-pulse delay-1000" />
+		<div className="min-h-dvh">
+			<div className="mx-auto max-w-6xl px-6 pt-12 pb-16">
+				<div className="scorecard golf-hero rounded-[calc(var(--radius)+0.5rem)]">
+					<div className="relative px-6 py-10 md:px-12 md:py-12">
+						<div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+							<div>
+								<div className="inline-flex items-center gap-2 rounded-full flag-chip px-3 py-1 text-xs font-semibold text-foreground/90 backdrop-blur">
+									<Upload className="size-3.5 text-[oklch(0.66_0.19_28)]" />
+									Data import
+								</div>
+								<h1 className="mt-4 text-balance text-4xl md:text-6xl font-black tracking-tight">
+									Bring in tournament results
+								</h1>
+								<p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
+									Upload a CSV to update scoring. This page is styled and ready; wire
+									the actual import logic when you’re ready.
+								</p>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<Button
+									variant="outline"
+									className="h-10 px-5 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+								>
+									<Download className="size-4" />
+									Template
+								</Button>
+								<Button
+									variant="outline"
+									className="h-10 px-5 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+								>
+									<History className="size-4" />
+									History
+								</Button>
+							</div>
+						</div>
+					</div>
 				</div>
 
-				<div className="relative z-10 px-6 py-24">
-					<div className="max-w-4xl mx-auto">
-						<div className="text-center mb-12">
-							<h1 className="text-6xl md:text-7xl font-black tracking-tight mb-4">
-								<span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-600 bg-clip-text text-transparent">
-									Data Import Portal
+				<div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
+					<Card
+						className={`scorecard lg:col-span-2 overflow-hidden transition-colors ${
+							isDragging ? "ring-2 ring-primary/35" : ""
+						}`}
+					>
+						<CardHeader className="border-b border-border/70 bg-background/20">
+							<CardTitle className="text-xl md:text-2xl font-black flex items-center gap-3">
+								<span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-primary/25">
+									<Upload className="size-4 text-primary" />
 								</span>
-							</h1>
-							<p className="text-xl text-slate-300 max-w-2xl mx-auto">
-								Upload tournament results and scoring data for the golf pool
-							</p>
-						</div>
-
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-							{/* Upload Section */}
-							<Card
-								className={`backdrop-blur-xl bg-slate-800/50 border border-slate-700/50 transition-all duration-300 ${
-									isDragging
-										? "border-purple-500/50 shadow-2xl shadow-purple-500/20"
-										: "shadow-2xl"
-								}`}
+								Import CSV
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="p-6 space-y-5">
+							<button
+								type="button"
+								onDragOver={handleDragOver}
+								onDragLeave={handleDragLeave}
+								onDrop={handleDrop}
+								className={[
+									"w-full rounded-2xl border border-dashed px-6 py-10 text-left transition-colors",
+									"bg-background/20 hover:bg-background/25",
+									isDragging ? "border-primary/60" : "border-border/70",
+								].join(" ")}
 							>
-								<CardHeader className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 border-b border-slate-700/50">
-									<CardTitle className="text-2xl font-black flex items-center gap-3">
-										<div className="w-3 h-3 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full" />
-										Import Tournament Results
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="p-6 space-y-4">
-									{/* Upload Area */}
-									<button
-										type="button"
-										onDragOver={handleDragOver}
-										onDragLeave={handleDragLeave}
-										onDrop={handleDrop}
-										className={`w-full border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer ${
-											isDragging
-												? "border-purple-500 bg-purple-500/10"
-												: "border-slate-600 hover:border-purple-500 hover:bg-purple-500/5"
-										}`}
-									>
-										{uploadStatus === "idle" && (
-											<>
-												<Upload className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-												<p className="text-lg text-slate-300 font-black mb-2">
-													Drag and drop CSV file here
-												</p>
-												<p className="text-sm text-slate-500 mb-4">
-													or click to browse
-												</p>
-												<Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
-													Select File
-												</Button>
-											</>
-										)}
+								<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+									<div className="flex items-start gap-4">
+										<div className="mt-0.5 inline-flex size-12 items-center justify-center rounded-xl border border-border/70 bg-background/25">
+											{uploadStatus === "success" ? (
+												<CheckCircle className="size-6 text-primary" />
+											) : uploadStatus === "error" ? (
+												<AlertCircle className="size-6 text-destructive" />
+											) : (
+												<Upload className="size-6 text-muted-foreground" />
+											)}
+										</div>
 
-										{uploadStatus === "uploading" && (
-											<>
-												<div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-												<p className="text-lg text-slate-300 font-black mb-4">
-													Processing...
-												</p>
-												<div className="w-full bg-slate-700 rounded-full h-2">
-													<div
-														className="h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-200"
-														style={{ width: `${uploadProgress}%` }}
-													/>
-												</div>
-												<p className="text-sm text-slate-400 mt-2">
-													{uploadProgress}% complete
-												</p>
-											</>
-										)}
-
-										{uploadStatus === "success" && (
-											<>
-												<CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-400" />
-												<p className="text-lg text-green-400 font-black mb-2">
-													Upload Complete!
-												</p>
-												<p className="text-sm text-slate-400 mb-4">
-													Data has been successfully imported
-												</p>
-												<Button
-													variant="outline"
-													className="border-green-600 text-green-300 hover:bg-green-700 hover:text-slate-200"
-												>
-													Import Another File
-												</Button>
-											</>
-										)}
-
-										{uploadStatus === "error" && (
-											<>
-												<AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
-												<p className="text-lg text-red-400 font-black mb-2">
-													Upload Failed
-												</p>
-												<p className="text-sm text-slate-400 mb-4">
-													There was an error processing your file
-												</p>
-												<Button
-													variant="outline"
-													className="border-red-600 text-red-300 hover:bg-red-700 hover:text-slate-200"
-												>
-													Try Again
-												</Button>
-											</>
-										)}
-									</button>
-
-									{/* CSV Format Instructions */}
-									<div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-										<h3 className="text-sm font-black text-slate-300 mb-2">
-											CSV Format
-										</h3>
-										<pre className="text-xs text-slate-400 font-mono">
-											TournamentID,GolferName,Rank
-											<br />
-											sony-open,Tommy Fleetwood,1
-											<br />
-											sony-open,Rory McIlroy,2
-											<br />
-											...
-										</pre>
+										<div>
+											<div className="text-base font-semibold">
+												{uploadStatus === "idle" && "Drop your CSV here"}
+												{uploadStatus === "uploading" && "Processing import…"}
+												{uploadStatus === "success" && "Upload complete"}
+												{uploadStatus === "error" && "Upload failed"}
+											</div>
+											<p className="mt-1 text-sm text-muted-foreground">
+												{uploadStatus === "idle" &&
+													"Drag & drop or click to select a file."}
+												{uploadStatus === "uploading" &&
+													"Parsing, validating, and staging scoring updates."}
+												{uploadStatus === "success" &&
+													"Data has been staged (hook up the real importer next)."}
+												{uploadStatus === "error" &&
+													"Something went wrong. Try again once wired."}
+											</p>
+										</div>
 									</div>
 
-									{/* Quick Actions */}
-									<div className="flex gap-3">
-										<Button
-											variant="outline"
-											className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-200"
-										>
-											<Download className="w-4 h-4 mr-2" />
-											Download Template
-										</Button>
-										<Button
-											variant="outline"
-											className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-200"
-										>
-											View Import History
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-
-							{/* Import History */}
-							<Card className="backdrop-blur-xl bg-slate-800/50 border border-slate-700/50 shadow-2xl">
-								<CardHeader className="bg-gradient-to-r from-green-800/90 to-emerald-900/90 border-b border-slate-700/50">
-									<CardTitle className="text-2xl font-black flex items-center gap-2">
-										<div className="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full" />
-										Recent Imports
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="p-6">
-									<div className="space-y-3">
-										{[
-											{
-												file: "sony-open-results.csv",
-												date: "2 hours ago",
-												status: "success",
-											},
-											{
-												file: "american-express-results.csv",
-												date: "2 days ago",
-												status: "success",
-											},
-											{
-												file: "farmers-insurance-results.csv",
-												date: "5 days ago",
-												status: "success",
-											},
-											{
-												file: "pebble-beach-results.csv",
-												date: "1 week ago",
-												status: "error",
-											},
-										].map((import_, index) => (
-											<div
-												key={import_.file + String(index)}
-												className="flex items-center justify-between p-3 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-green-500/30 transition-colors"
+									<div className="flex items-center gap-2">
+										{uploadStatus === "success" ? (
+											<Button
+												variant="outline"
+												className="h-10 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
 											>
-												<div className="flex items-center gap-3">
-													{import_.status === "success" ? (
-														<CheckCircle className="w-5 h-5 text-green-400" />
-													) : (
-														<AlertCircle className="w-5 h-5 text-red-400" />
-													)}
-													<div>
-														<p className="font-black text-slate-100">
-															{import_.file}
-														</p>
-														<p className="text-xs text-slate-500">
-															{import_.date}
-														</p>
-													</div>
-												</div>
-												<div className="flex items-center gap-2">
-													<span
-														className={`text-xs font-black ${
-															import_.status === "success"
-																? "text-green-400"
-																: "text-red-400"
-														}`}
-													>
-														{import_.status === "success"
-															? "Complete"
-															: "Failed"}
-													</span>
+												Import another
+											</Button>
+										) : (
+											<Button className="h-10 font-semibold">Select file</Button>
+										)}
+									</div>
+								</div>
+
+								{uploadStatus === "uploading" && (
+									<div className="mt-6 space-y-2">
+										<Progress value={uploadProgress} />
+										<div className="text-xs text-muted-foreground">
+											{uploadProgress}% complete
+										</div>
+									</div>
+								)}
+							</button>
+
+							<div className="rounded-xl border border-border/70 bg-background/20 p-4">
+								<div className="flex items-center justify-between gap-3">
+									<h3 className="text-sm font-black tracking-tight">CSV format</h3>
+									<Badge variant="outline" className="bg-background/25">
+										TournamentID • GolferName • Rank
+									</Badge>
+								</div>
+								<pre className="mt-3 text-xs text-muted-foreground font-mono leading-relaxed">
+									TournamentID,GolferName,Rank{"\n"}
+									sony-open,Tommy Fleetwood,1{"\n"}
+									sony-open,Rory McIlroy,2{"\n"}…
+								</pre>
+							</div>
+						</CardContent>
+					</Card>
+
+					<div className="space-y-6">
+						<Card className="scorecard">
+							<CardHeader className="border-b border-border/70 bg-background/20">
+								<CardTitle className="text-lg font-black flex items-center gap-2">
+									<span className="inline-flex size-7 items-center justify-center rounded-lg bg-background/25 ring-1 ring-border/60">
+										<History className="size-3.5 text-[oklch(0.66_0.19_28)]" />
+									</span>
+									Recent imports
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="p-6">
+								<div className="space-y-3">
+									{[
+										{
+											file: "sony-open-results.csv",
+											date: "2 hours ago",
+											status: "success" as const,
+										},
+										{
+											file: "american-express-results.csv",
+											date: "2 days ago",
+											status: "success" as const,
+										},
+										{
+											file: "farmers-insurance-results.csv",
+											date: "5 days ago",
+											status: "success" as const,
+										},
+										{
+											file: "pebble-beach-results.csv",
+											date: "1 week ago",
+											status: "error" as const,
+										},
+									].map((import_, index) => (
+										<div
+											key={import_.file + String(index)}
+											className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/20 px-4 py-3 hover:bg-background/25 transition-colors"
+										>
+											<div className="flex items-center gap-3 min-w-0">
+												{import_.status === "success" ? (
+													<CheckCircle className="size-5 text-primary shrink-0" />
+												) : (
+													<AlertCircle className="size-5 text-destructive shrink-0" />
+												)}
+												<div className="min-w-0">
+													<p className="truncate text-sm font-semibold">
+														{import_.file}
+													</p>
+													<p className="text-[11px] text-muted-foreground">
+														{import_.date}
+													</p>
 												</div>
 											</div>
-										))}
-									</div>
-								</CardContent>
-							</Card>
-						</div>
 
-						{/* Import Statistics */}
-						<div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
-							<Card className="backdrop-blur-xl bg-slate-800/50 border border-slate-700/50">
-								<CardContent className="p-6 text-center">
-									<div className="text-4xl font-black text-cyan-400 font-bold mb-2">
-										156
+											<Badge
+												variant="outline"
+												className={[
+													"bg-background/25",
+													import_.status === "success"
+														? "text-primary border-primary/30"
+														: "text-destructive border-destructive/30",
+												].join(" ")}
+											>
+												{import_.status === "success" ? "Complete" : "Failed"}
+											</Badge>
+										</div>
+									))}
+								</div>
+							</CardContent>
+						</Card>
+
+						<Card className="scorecard">
+							<CardHeader className="border-b border-border/70 bg-background/20">
+								<CardTitle className="text-lg font-black">Import stats</CardTitle>
+							</CardHeader>
+							<CardContent className="p-6">
+								<div className="grid grid-cols-2 gap-3">
+									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
+										<div className="text-xl font-black text-foreground">156</div>
+										<div className="mt-1 text-[11px] text-muted-foreground">
+											Total
+										</div>
 									</div>
-									<div className="text-sm text-slate-400">Total Imports</div>
-								</CardContent>
-							</Card>
-							<Card className="backdrop-blur-xl bg-slate-800/50 border border-slate-700/50">
-								<CardContent className="p-6 text-center">
-									<div className="text-4xl font-black text-green-400 font-bold mb-2">
-										149
+									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
+										<div className="text-xl font-black text-primary">149</div>
+										<div className="mt-1 text-[11px] text-muted-foreground">
+											Successful
+										</div>
 									</div>
-									<div className="text-sm text-slate-400">Successful</div>
-								</CardContent>
-							</Card>
-							<Card className="backdrop-blur-xl bg-slate-800/50 border border-slate-700/50">
-								<CardContent className="p-6 text-center">
-									<div className="text-4xl font-black text-amber-400 font-bold mb-2">
-										7
+									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
+										<div className="text-xl font-black text-[oklch(0.66_0.19_28)]">
+											7
+										</div>
+										<div className="mt-1 text-[11px] text-muted-foreground">
+											Pending
+										</div>
 									</div>
-									<div className="text-sm text-slate-400">Pending Review</div>
-								</CardContent>
-							</Card>
-							<Card className="backdrop-blur-xl bg-slate-800/50 border border-slate-700/50">
-								<CardContent className="p-6 text-center">
-									<div className="text-4xl font-black text-purple-400 font-bold mb-2">
-										98%
+									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
+										<div className="text-xl font-black text-foreground">98%</div>
+										<div className="mt-1 text-[11px] text-muted-foreground">
+											Rate
+										</div>
 									</div>
-									<div className="text-sm text-slate-400">Success Rate</div>
-								</CardContent>
-							</Card>
-						</div>
+								</div>
+							</CardContent>
+						</Card>
 					</div>
 				</div>
 			</div>
