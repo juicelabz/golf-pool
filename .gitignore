@@ -17,3 +17,6 @@ data/
 *.db
 
 whitelist.json
+
+# bv (beads viewer) local config and caches
+.bv/

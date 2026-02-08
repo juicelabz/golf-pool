@@ -5,3 +5,4 @@ maxIterations = 30
 agent = "opencode"
 tracker = "beads-bv"
 autoCommit = true
+subagentTracingDetail = "off"
