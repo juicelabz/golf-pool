@@ -73,6 +73,8 @@ export const createRoleMiddleware = (allowedRoles: string[]) =>
 
 export const startInstance = createStart(() => {
 	return {
-		functionMiddleware: [authMiddleware, adminMiddleware, dataMiddleware],
+		// Global middleware applies to *all* server functions. Role checks should be
+		// enforced per-route/per-function to avoid redirect loops.
+		functionMiddleware: [authMiddleware],
 	};
 });

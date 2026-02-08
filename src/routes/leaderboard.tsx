@@ -42,13 +42,21 @@ function Leaderboard() {
 	const navigate = Route.useNavigate();
 	const router = useRouter();
 	const [isRefreshing, setIsRefreshing] = useState(false);
-	const lastUpdatedAt = new Date(data.lastUpdatedAt).toLocaleTimeString();
+	const lastUpdatedAt = new Date(data.lastUpdatedAt);
+	const lastUpdatedAtLabel = `${lastUpdatedAt.toLocaleTimeString()}.${String(
+		lastUpdatedAt.getMilliseconds(),
+	).padStart(3, "0")}`;
 
 	const handleRefresh = async () => {
 		if (isRefreshing) return;
 		setIsRefreshing(true);
 		try {
-			await router.invalidate({ sync: true });
+			// Give React a chance to paint the "Refreshing..." state before the
+			// invalidation work begins.
+			await new Promise<void>((resolve) =>
+				requestAnimationFrame(() => resolve()),
+			);
+			await router.invalidate();
 		} finally {
 			setIsRefreshing(false);
 		}
@@ -316,7 +324,7 @@ function Leaderboard() {
 										{data.totalMembers} members
 									</div>
 									<div className="text-[11px] text-muted-foreground">
-										Last updated: {lastUpdatedAt}
+										Last updated: {lastUpdatedAtLabel}
 									</div>
 									{isRefreshing && (
 										<div className="text-[11px] text-primary">

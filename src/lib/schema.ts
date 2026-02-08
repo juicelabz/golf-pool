@@ -202,6 +202,9 @@ export const scoringUnique = uniqueIndex("scoring_tournament_golfer_unique").on(
 // Schema export
 export const schema = {
 	user,
+	session,
+	account,
+	verification,
 	golfers,
 	members,
 	tournaments,

@@ -4,6 +4,7 @@ import { APIError } from "better-auth/api";
 import { admin as adminPlugin } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "./db";
+import { schema } from "./schema";
 import { buildWhitelistSet, normalizeEmail } from "./whitelist";
 
 // Load whitelist from JSON
@@ -31,6 +32,7 @@ async function loadWhitelist(): Promise<Set<string>> {
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "sqlite",
+		schema,
 	}),
 
 	// Enable email and password authentication

@@ -1,13 +1,23 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import * as React from "react";
 import { NotFound } from "@/components/NotFound";
 import Header from "../components/Header";
 import { requireAuth } from "../lib/session";
 import appCss from "../styles.css?url";
 
+if (typeof window !== "undefined") {
+	(window as Window & { React?: typeof React }).React = React;
+}
+
 export const Route = createRootRoute({
 	beforeLoad: async ({ location }) => {
+		// Auth checks here rely on the Better Auth client, so enforce on client only.
+		if (typeof window === "undefined") {
+			return;
+		}
+
 		if (location.pathname === "/login" || location.pathname === "/signup") {
 			return;
 		}
