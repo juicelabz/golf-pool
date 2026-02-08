@@ -20,15 +20,15 @@ export function parseTournamentCSV(csvContent: string): TournamentResult[] {
 		const [tournamentId, golferName, rankStr] = parts;
 
 		try {
-			const rank = parseInt(rankStr);
-			if (isNaN(rank)) continue;
+			const rank = parseInt(rankStr, 10);
+			if (Number.isNaN(rank)) continue;
 
 			results.push({
 				tournamentId: tournamentId,
 				golferName: golferName,
 				rank,
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.warn(`Skipping invalid row ${i + 1}:`, parts);
 		}
 	}

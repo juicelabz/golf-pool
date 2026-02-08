@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { authClient } from "@/lib/auth-client";
 import { requireAuth } from "@/lib/session";
 import { useAuth } from "@/lib/use-auth";
 
@@ -54,7 +53,7 @@ function Login() {
 				);
 			} else {
 				const redirectTo =
-					redirect && redirect.startsWith("/") ? redirect : "/leaderboard";
+					redirect?.startsWith("/") ? redirect : "/leaderboard";
 				router.navigate({ to: redirectTo });
 			}
 		} catch (err: any) {

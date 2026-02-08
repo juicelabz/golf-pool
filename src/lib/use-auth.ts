@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { authClient } from "./auth-client";
 
 export interface AuthState {
@@ -16,7 +16,7 @@ export function useAuth() {
 	const isAuthenticated = !!session?.user;
 	const user = session?.user ?? null;
 
-	const refetch = async () => {
+	const refetch = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
 		try {
@@ -29,12 +29,12 @@ export function useAuth() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, []);
 
 	// Initial session fetch
 	useEffect(() => {
 		refetch();
-	}, []);
+	}, [refetch]);
 
 	// Setup periodic session refresh
 	useEffect(() => {
@@ -48,7 +48,7 @@ export function useAuth() {
 		); // Refresh every 10 minutes
 
 		return () => clearInterval(interval);
-	}, [isAuthenticated]);
+	}, [isAuthenticated, refetch]);
 
 	const signIn = async (email: string, password: string) => {
 		try {

@@ -1,6 +1,5 @@
 import { db } from "./db";
-import { golfers, members, rosters, scoring, tournaments } from "./schema";
-import { calculatePoints } from "./seed";
+import { golfers, members, rosters, } from "./schema";
 
 async function populateMemberRosters() {
 	console.log("📊 Populating member rosters from CSV data...");

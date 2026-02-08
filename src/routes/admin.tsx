@@ -8,7 +8,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../components/ui/card";
-import { authClient } from "../lib/auth-client";
 import { requireRole } from "../lib/session";
 import { useAuth } from "../lib/use-auth";
 

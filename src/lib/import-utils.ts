@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import fs from "fs";
+import fs from "node:fs";
 
 export interface GolferData {
 	name: string;
@@ -51,7 +51,7 @@ export function parseChalkCounterCSV(filePath: string): GolferData[] {
 		if (row[0]?.includes("Category")) {
 			const match = row[0].match(/Category (\d+)/);
 			if (match) {
-				currentCategory = parseInt(match[1]);
+				currentCategory = parseInt(match[1], 10);
 			}
 			continue;
 		}

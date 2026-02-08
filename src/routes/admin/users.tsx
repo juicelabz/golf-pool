@@ -36,10 +36,6 @@ function UserManagement() {
 	const [error, setError] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	if (authorized === false) {
-		return <NotAuthorized />;
-	}
-
 	const fetchUsers = useCallback(async () => {
 		try {
 			setError(null);
@@ -80,6 +76,10 @@ function UserManagement() {
 			setFilteredUsers(users);
 		}
 	}, [searchQuery, users]);
+
+	if (authorized === false) {
+		return <NotAuthorized />;
+	}
 
 	return (
 		<div className="min-h-screen px-6 py-10">
