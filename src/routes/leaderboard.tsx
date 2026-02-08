@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Flag, Sparkles, Trophy } from "lucide-react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Flag, RefreshCw, Sparkles, Trophy } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../components/ui/button";
 import {
 	Card,
@@ -39,7 +40,19 @@ function Leaderboard() {
 	const data = Route.useLoaderData();
 	const { page, pageSize } = Route.useSearch();
 	const navigate = Route.useNavigate();
+	const router = useRouter();
+	const [isRefreshing, setIsRefreshing] = useState(false);
 	const lastUpdatedAt = new Date(data.lastUpdatedAt).toLocaleTimeString();
+
+	const handleRefresh = async () => {
+		if (isRefreshing) return;
+		setIsRefreshing(true);
+		try {
+			await router.invalidate({ sync: true });
+		} finally {
+			setIsRefreshing(false);
+		}
+	};
 
 	return (
 		<div className="min-h-dvh">
@@ -64,6 +77,17 @@ function Leaderboard() {
 								<Button className="h-10 px-5 font-semibold">
 									<Trophy className="size-4" />
 									Top 10 focus
+								</Button>
+								<Button
+									variant="outline"
+									className="h-10 px-5 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+									onClick={handleRefresh}
+									disabled={isRefreshing}
+								>
+									<RefreshCw
+										className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
+									/>
+									{isRefreshing ? "Refreshing..." : "Refresh standings"}
 								</Button>
 								<Button
 									variant="outline"
@@ -294,6 +318,11 @@ function Leaderboard() {
 									<div className="text-[11px] text-muted-foreground">
 										Last updated: {lastUpdatedAt}
 									</div>
+									{isRefreshing && (
+										<div className="text-[11px] text-primary">
+											Refreshing standings...
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>
