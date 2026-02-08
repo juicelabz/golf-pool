@@ -16,9 +16,7 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "../components/ui/pagination";
-import { db } from "../lib/db";
-import { golfers, members, rosters, scoring, tournaments } from "../lib/schema";
-import { calculatePoints } from "../lib/seed";
+import { getLeaderboardData } from "../lib/server-functions";
 
 export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
@@ -28,104 +26,12 @@ export const Route = createFileRoute("/leaderboard")({
 	}),
 	loaderDeps: ({ search: { page, pageSize } }) => ({ page, pageSize }),
 	loader: async ({ deps: { page, pageSize } }) => {
-		type Member = typeof members.$inferSelect;
-		type Roster = typeof rosters.$inferSelect;
-		type Score = typeof scoring.$inferSelect;
-		type Tournament = typeof tournaments.$inferSelect;
-
-		type MemberWithPoints = Member & {
-			totalPoints: number;
-			segment1Points: number;
-			segment2Points: number;
-			segment3Points: number;
-			segment4Points: number;
-			segment5Points: number;
-		};
-
-		// Fetch all data needed for leaderboard
-		const [allMembers, allScoring, allTournaments, allGolfers, allRosters] =
-			await Promise.all([
-				db.select().from(members),
-				db.select().from(scoring),
-				db.select().from(tournaments),
-				db.select().from(golfers),
-				db.select().from(rosters),
-			]);
-
-		// Calculate member scores using actual roster data
-		const membersWithScores: MemberWithPoints[] = allMembers.map((member) => {
-			// Get all golfers in this member's roster
-			const memberRoster: Roster[] = allRosters.filter(
-				(r) => r.memberId === member.id,
-			);
-			const memberGolferIds = memberRoster.map((r) => r.golferId);
-
-			// Get scoring data only for golfers in this member's roster
-			const memberScoring: Score[] = allScoring.filter((s) =>
-				memberGolferIds.includes(s.golferId),
-			);
-
-			// Calculate total points for each tournament this member's golfers participated in
-			const totalPoints = memberScoring.reduce((sum, score) => {
-				const tournament: Tournament | undefined = allTournaments.find(
-					(t) => t.id === score.tournamentId,
-				);
-				if (tournament) {
-					return sum + calculatePoints(score.rank, tournament.type);
-				}
-				return sum;
-			}, 0);
-
-			// Calculate segment-based points
-			const segmentPoints = {
-				segment1Points: 0,
-				segment2Points: 0,
-				segment3Points: 0,
-				segment4Points: 0,
-				segment5Points: 0,
-			};
-
-			memberScoring.forEach((score) => {
-				const tournament: Tournament | undefined = allTournaments.find(
-					(t) => t.id === score.tournamentId,
-				);
-				if (tournament) {
-					const points = calculatePoints(score.rank, tournament.type);
-					const segmentKey =
-						`segment${tournament.segment}Points` as keyof typeof segmentPoints;
-					segmentPoints[segmentKey] += points;
-				}
-			});
-
-			return {
-				...member,
-				totalPoints,
-				...segmentPoints,
-			};
+		return getLeaderboardData({
+			data: {
+				page,
+				pageSize,
+			},
 		});
-
-		// Sort by total points (highest first)
-		const sortedMembers: MemberWithPoints[] = [...membersWithScores].sort(
-			(a, b) => b.totalPoints - a.totalPoints,
-		);
-
-		// Calculate pagination
-		const startIndex = (page - 1) * pageSize;
-		const endIndex = startIndex + pageSize;
-		const paginatedMembers = sortedMembers.slice(startIndex, endIndex);
-		const totalPages = Math.ceil(sortedMembers.length / pageSize);
-
-		return {
-			members: paginatedMembers,
-			tournaments: allTournaments,
-			golfers: allGolfers,
-			totalParticipants: allMembers.length,
-			totalGolfers: allGolfers.length,
-			totalMembers: sortedMembers.length,
-			currentPage: page,
-			pageSize,
-			totalPages,
-		};
 	},
 });
 

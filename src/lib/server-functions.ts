@@ -3,8 +3,8 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { auth } from "./auth";
 import { db } from "./db";
-import { golfers, scoring, tournaments } from "./schema";
-import { calculatePoints } from "./seed";
+import { calculatePoints } from "./scoring";
+import { golfers, members, rosters, scoring, tournaments } from "./schema";
 
 type Role = "admin" | "data" | "user";
 
@@ -185,6 +185,107 @@ export const importScoringData = createServerFn({ method: "POST" }).handler(
 					: "Unable to import scoring data.",
 			);
 		}
+	},
+);
+
+export const getLeaderboardData = createServerFn({ method: "GET" }).handler(
+	async ({
+		page,
+		pageSize,
+	}: {
+		page: number;
+		pageSize: number;
+	}) => {
+		type Member = typeof members.$inferSelect;
+		type Roster = typeof rosters.$inferSelect;
+		type Score = typeof scoring.$inferSelect;
+		type Tournament = typeof tournaments.$inferSelect;
+
+		type MemberWithPoints = Member & {
+			totalPoints: number;
+			segment1Points: number;
+			segment2Points: number;
+			segment3Points: number;
+			segment4Points: number;
+			segment5Points: number;
+		};
+
+		const [allMembers, allScoring, allTournaments, allGolfers, allRosters] =
+			await Promise.all([
+				db.select().from(members),
+				db.select().from(scoring),
+				db.select().from(tournaments),
+				db.select().from(golfers),
+				db.select().from(rosters),
+			]);
+
+		const membersWithScores: MemberWithPoints[] = allMembers.map((member) => {
+			const memberRoster: Roster[] = allRosters.filter(
+				(r) => r.memberId === member.id,
+			);
+			const memberGolferIds = memberRoster.map((r) => r.golferId);
+
+			const memberScoring: Score[] = allScoring.filter((s) =>
+				memberGolferIds.includes(s.golferId),
+			);
+
+			const totalPoints = memberScoring.reduce((sum, score) => {
+				const tournament: Tournament | undefined = allTournaments.find(
+					(t) => t.id === score.tournamentId,
+				);
+				if (tournament) {
+					return sum + calculatePoints(score.rank, tournament.type);
+				}
+				return sum;
+			}, 0);
+
+			const segmentPoints = {
+				segment1Points: 0,
+				segment2Points: 0,
+				segment3Points: 0,
+				segment4Points: 0,
+				segment5Points: 0,
+			};
+
+			memberScoring.forEach((score) => {
+				const tournament: Tournament | undefined = allTournaments.find(
+					(t) => t.id === score.tournamentId,
+				);
+				if (tournament) {
+					const points = calculatePoints(score.rank, tournament.type);
+					const segmentKey =
+						`segment${tournament.segment}Points` as keyof typeof segmentPoints;
+					segmentPoints[segmentKey] += points;
+				}
+			});
+
+			return {
+				...member,
+				totalPoints,
+				...segmentPoints,
+			};
+		});
+
+		const sortedMembers: MemberWithPoints[] = [...membersWithScores].sort(
+			(a, b) => b.totalPoints - a.totalPoints,
+		);
+
+		const startIndex = (page - 1) * pageSize;
+		const endIndex = startIndex + pageSize;
+		const paginatedMembers = sortedMembers.slice(startIndex, endIndex);
+		const totalPages = Math.ceil(sortedMembers.length / pageSize);
+
+		return {
+			members: paginatedMembers,
+			tournaments: allTournaments,
+			golfers: allGolfers,
+			totalParticipants: allMembers.length,
+			totalGolfers: allGolfers.length,
+			totalMembers: sortedMembers.length,
+			currentPage: page,
+			pageSize,
+			totalPages,
+		};
 	},
 );
 
