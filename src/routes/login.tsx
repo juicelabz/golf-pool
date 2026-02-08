@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { requireAuth } from "@/lib/session";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/login")({
 	component: Login,
@@ -31,6 +32,7 @@ function Login() {
 	const emailId = useId();
 	const passwordId = useId();
 	const { redirect } = Route.useSearch();
+	const { signIn } = useAuth();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -43,10 +45,7 @@ function Login() {
 		setLoading(true);
 
 		try {
-			const result = await authClient.signIn.email({
-				email,
-				password,
-			});
+			const result = await signIn(email, password);
 
 			if (result.error) {
 				setError(

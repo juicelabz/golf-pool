@@ -1,9 +1,20 @@
 import { Link } from "@tanstack/react-router";
-import { Flag, Home, Menu, Settings, Trophy, X } from "lucide-react";
+import {
+	Flag,
+	Home,
+	LogOut,
+	Menu,
+	Settings,
+	Trophy,
+	User,
+	X,
+} from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/lib/use-auth";
 
 export default function Header() {
 	const [isOpen, setIsOpen] = useState(false);
+	const { isAuthenticated, user, signOut, isLoading } = useAuth();
 
 	return (
 		<>
@@ -33,21 +44,59 @@ export default function Header() {
 					</Link>
 
 					<div className="ml-auto flex items-center gap-2">
-						<Link
-							to="/leaderboard"
-							search={{ page: 1, pageSize: 20 }}
-							className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
-						>
-							<Trophy className="size-4 text-primary" />
-							Leaderboard
-						</Link>
-						<Link
-							to="/admin"
-							className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
-						>
-							<Settings className="size-4 text-[oklch(0.66_0.19_28)]" />
-							Admin
-						</Link>
+						{!isLoading && isAuthenticated && (
+							<>
+								<Link
+									to="/leaderboard"
+									search={{ page: 1, pageSize: 20 }}
+									className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
+								>
+									<Trophy className="size-4 text-primary" />
+									Leaderboard
+								</Link>
+								{user?.role === "admin" || user?.role === "data" ? (
+									<Link
+										to="/admin"
+										className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
+									>
+										<Settings className="size-4 text-[oklch(0.66_0.19_28)]" />
+										Admin
+									</Link>
+								) : null}
+								<div className="hidden sm:flex items-center gap-2 border-l border-border/50 pl-2 ml-2">
+									<div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-background/20">
+										<User className="size-4 text-muted-foreground" />
+										<span className="text-sm font-medium text-foreground">
+											{user?.name || user?.email}
+										</span>
+									</div>
+									<button
+										type="button"
+										onClick={async () => {
+											try {
+												await signOut();
+												window.location.href = "/login";
+											} catch (error) {
+												console.error("Sign out error:", error);
+											}
+										}}
+										className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
+									>
+										<LogOut className="size-4" />
+										<span className="hidden sm:inline">Sign out</span>
+									</button>
+								</div>
+							</>
+						)}
+						{!isLoading && !isAuthenticated && (
+							<Link
+								to="/login"
+								className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-primary/15 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/25 transition-colors"
+							>
+								<User className="size-4" />
+								Sign in
+							</Link>
+						)}
 					</div>
 				</div>
 			</header>
@@ -70,46 +119,108 @@ export default function Header() {
 				</div>
 
 				<nav className="flex-1 p-4 overflow-y-auto">
-					<Link
-						to="/"
-						onClick={() => setIsOpen(false)}
-						className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
-						activeProps={{
-							className:
-								"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
-						}}
-					>
-						<Home size={20} />
-						<span className="font-medium">Home</span>
-					</Link>
+					{!isLoading && isAuthenticated && (
+						<>
+							<Link
+								to="/"
+								onClick={() => setIsOpen(false)}
+								className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
+								activeProps={{
+									className:
+										"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
+								}}
+							>
+								<Home size={20} />
+								<span className="font-medium">Home</span>
+							</Link>
 
-					{/* Golf Pool Links */}
-					<Link
-						to="/leaderboard"
-						search={{ page: 1, pageSize: 20 }}
-						onClick={() => setIsOpen(false)}
-						className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
-						activeProps={{
-							className:
-								"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
-						}}
-					>
-						<Trophy size={20} />
-						<span className="font-medium">Leaderboard</span>
-					</Link>
+							{/* Golf Pool Links */}
+							<Link
+								to="/leaderboard"
+								search={{ page: 1, pageSize: 20 }}
+								onClick={() => setIsOpen(false)}
+								className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
+								activeProps={{
+									className:
+										"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
+								}}
+							>
+								<Trophy size={20} />
+								<span className="font-medium">Leaderboard</span>
+							</Link>
 
-					<Link
-						to="/admin"
-						onClick={() => setIsOpen(false)}
-						className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
-						activeProps={{
-							className:
-								"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
-						}}
-					>
-						<Settings size={20} />
-						<span className="font-medium">Admin</span>
-					</Link>
+							{user?.role === "admin" || user?.role === "data" ? (
+								<Link
+									to="/admin"
+									onClick={() => setIsOpen(false)}
+									className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
+									activeProps={{
+										className:
+											"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
+									}}
+								>
+									<Settings size={20} />
+									<span className="font-medium">Admin</span>
+								</Link>
+							) : null}
+
+							<div className="border-t border-border/70 my-4 pt-4">
+								<div className="flex items-center gap-3 p-3 rounded-xl bg-background/10 mb-2">
+									<User size={20} className="text-muted-foreground" />
+									<div className="flex-1 min-w-0">
+										<div className="font-medium text-sm text-foreground truncate">
+											{user?.name || "User"}
+										</div>
+										<div className="text-xs text-muted-foreground truncate">
+											{user?.email}
+										</div>
+										{user?.role && (
+											<div className="text-xs text-primary capitalize">
+												{user.role}
+											</div>
+										)}
+									</div>
+								</div>
+
+								<button
+									type="button"
+									onClick={async () => {
+										try {
+											await signOut();
+											window.location.href = "/login";
+										} catch (error) {
+											console.error("Sign out error:", error);
+										}
+									}}
+									className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors text-sm font-medium text-foreground"
+								>
+									<LogOut size={20} />
+									<span>Sign out</span>
+								</button>
+							</div>
+						</>
+					)}
+
+					{!isLoading && !isAuthenticated && (
+						<Link
+							to="/login"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
+							}}
+						>
+							<User size={20} />
+							<span className="font-medium">Sign in</span>
+						</Link>
+					)}
+
+					{isLoading && (
+						<div className="flex items-center justify-center p-8">
+							<div className="text-sm text-muted-foreground">Loading...</div>
+						</div>
+					)}
 				</nav>
 			</aside>
 		</>

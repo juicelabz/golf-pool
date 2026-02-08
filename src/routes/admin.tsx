@@ -10,6 +10,7 @@ import {
 } from "../components/ui/card";
 import { authClient } from "../lib/auth-client";
 import { requireRole } from "../lib/session";
+import { useAuth } from "../lib/use-auth";
 
 export const Route = createFileRoute("/admin")({
 	component: Admin,
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/admin")({
 
 function Admin() {
 	const { authorized, user } = Route.useRouteContext();
+	const { signOut } = useAuth();
 	const role = (user as { role?: string } | null)?.role ?? "user";
 	const isDataRole = role === "data";
 	const showAdminCards = role === "admin";
@@ -35,8 +37,12 @@ function Admin() {
 	}
 
 	const handleLogout = async () => {
-		await authClient.signOut();
-		window.location.href = "/login";
+		try {
+			await signOut();
+			window.location.href = "/login";
+		} catch (error) {
+			console.error("Sign out error:", error);
+		}
 	};
 
 	return (

@@ -28,7 +28,7 @@ export const adminMiddleware = createMiddleware({ type: "function" }).server(
 		// Check if user has admin role
 		const userRole = session.user.role;
 		if (userRole !== "admin") {
-			throw redirect({ to: "/leaderboard" as any });
+			throw redirect({ to: "/leaderboard" });
 		}
 
 		return await next();
@@ -47,7 +47,7 @@ export const dataMiddleware = createMiddleware({ type: "function" }).server(
 		// Check if user has data or admin role
 		const userRole = session.user.role;
 		if (userRole !== "data" && userRole !== "admin") {
-			throw redirect({ to: "/leaderboard" as any });
+			throw redirect({ to: "/leaderboard" });
 		}
 
 		return await next();
@@ -65,7 +65,7 @@ export const createRoleMiddleware = (allowedRoles: string[]) =>
 
 		const userRole = session.user.role;
 		if (!userRole || !allowedRoles.includes(userRole)) {
-			throw redirect({ to: "/leaderboard" as any });
+			throw redirect({ to: "/leaderboard" });
 		}
 
 		return await next();

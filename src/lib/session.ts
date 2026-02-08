@@ -9,6 +9,22 @@ export async function getSession() {
 	}
 }
 
+export async function getSessionSSR(request?: Request) {
+	try {
+		// For server-side usage, we can use the auth handler directly
+		const session = request
+			? await authClient.getSession({
+					fetchOptions: {
+						headers: Object.fromEntries(request.headers.entries()),
+					},
+				})
+			: await authClient.getSession();
+		return session.data;
+	} catch {
+		return null;
+	}
+}
+
 export async function requireAuth() {
 	const session = await getSession();
 
