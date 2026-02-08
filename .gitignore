@@ -17,18 +17,3 @@ data/
 *.db
 
 whitelist.json
-
-# beads runtime artifacts (keep .beads/issues.jsonl tracked)
-.beads/*.db-shm
-.beads/*.db-wal
-.beads/daemon.lock
-.beads/daemon.log
-.beads/daemon.pid
-.beads/last-touched
-.beads/sync-state.json
-.beads/export-state/
-
-# ralph-tui local session artifacts
-.ralph-tui/iterations/
-.ralph-tui/session.json
-.ralph-tui/session-meta.json
