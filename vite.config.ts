@@ -19,6 +19,20 @@ const config = defineConfig({
 		setupFiles: ["./src/test/setup.ts"],
 		include: ["src/**/*.{test,spec}.{ts,tsx}"],
 		passWithNoTests: true,
+		alias: {
+			"bun:sqlite": "./src/test/mocks/bun-sqlite.ts",
+		},
+		environmentOptions: {
+			jsdom: {
+				resources: "usable",
+				runScripts: "dangerously",
+			},
+		},
+		resolve: {
+			alias: {
+				"bun:sqlite": "./src/test/mocks/bun-sqlite.ts",
+			},
+		},
 	},
 });
 
