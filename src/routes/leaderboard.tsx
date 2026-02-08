@@ -16,7 +16,7 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "../components/ui/pagination";
-import { getLeaderboardData } from "../lib/server-functions";
+import { getLeaderboardSnapshot } from "../lib/leaderboard-snapshot";
 
 export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/leaderboard")({
 	}),
 	loaderDeps: ({ search: { page, pageSize } }) => ({ page, pageSize }),
 	loader: async ({ deps: { page, pageSize } }) => {
-		return getLeaderboardData({
+		return getLeaderboardSnapshot({
 			data: {
 				page,
 				pageSize,
@@ -39,6 +39,7 @@ function Leaderboard() {
 	const data = Route.useLoaderData();
 	const { page, pageSize } = Route.useSearch();
 	const navigate = Route.useNavigate();
+	const lastUpdatedAt = new Date(data.lastUpdatedAt).toLocaleTimeString();
 
 	return (
 		<div className="min-h-dvh">
@@ -291,7 +292,7 @@ function Leaderboard() {
 										{data.totalMembers} members
 									</div>
 									<div className="text-[11px] text-muted-foreground">
-										Last updated: {new Date().toLocaleTimeString()}
+										Last updated: {lastUpdatedAt}
 									</div>
 								</div>
 							</CardContent>
