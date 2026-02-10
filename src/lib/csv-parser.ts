@@ -4,36 +4,201 @@ export interface TournamentResult {
 	rank: number;
 }
 
-export function parseTournamentCSV(csvContent: string): TournamentResult[] {
-	const lines = csvContent.split("\n").filter((line) => line.trim());
+export type CSVRowIssueSeverity = "error" | "warning";
+export type CSVRowIssueKind = "parse" | "validation";
 
-	// Skip header if it exists
-	const startIndex = lines[0].toLowerCase().includes("tournament") ? 1 : 0;
+export interface CSVRowIssue {
+	// 1-based row number in the provided CSV content (including headers).
+	rowNumber: number;
+	kind: CSVRowIssueKind;
+	severity: CSVRowIssueSeverity;
+	code: string;
+	message: string;
+	rawRow?: string;
+	cells?: string[];
+}
 
-	const results: TournamentResult[] = [];
+export type ParseTournamentCSVResult = {
+	rows: TournamentResult[];
+	issues: CSVRowIssue[];
+	header?: string[];
+};
 
-	for (let i = startIndex; i < lines.length; i++) {
-		const parts = lines[i].split(",").map((p) => p.trim());
+function normalizeHeaderCell(value: string): string {
+	return value.toLowerCase().replace(/\s+/g, "");
+}
 
-		if (parts.length < 3) continue;
+// Minimal RFC4180-style parser (quotes + escaped double quotes). Good enough for our expected inputs,
+// and provides deterministic row/cell handling for diagnostics.
+function splitCSVLine(line: string): string[] {
+	const out: string[] = [];
+	let cell = "";
+	let inQuotes = false;
 
-		const [tournamentId, golferName, rankStr] = parts;
+	for (let i = 0; i < line.length; i++) {
+		const ch = line[i];
 
-		try {
-			const rank = parseInt(rankStr, 10);
-			if (Number.isNaN(rank)) continue;
+		if (ch === '"') {
+			// Escaped quote inside a quoted field.
+			if (inQuotes && line[i + 1] === '"') {
+				cell += '"';
+				i++;
+				continue;
+			}
+			inQuotes = !inQuotes;
+			continue;
+		}
 
-			results.push({
-				tournamentId: tournamentId,
-				golferName: golferName,
-				rank,
+		if (ch === "," && !inQuotes) {
+			out.push(cell.trim());
+			cell = "";
+			continue;
+		}
+
+		cell += ch;
+	}
+
+	out.push(cell.trim());
+	return out;
+}
+
+export function parseTournamentCSVWithDiagnostics(
+	csvContent: string,
+): ParseTournamentCSVResult {
+	const rawLines = csvContent.split(/\r?\n/);
+	const nonEmptyLines = rawLines
+		.map((rawRow, i) => ({ rawRow, rowNumber: i + 1 }))
+		.filter((l) => l.rawRow.trim().length > 0);
+
+	if (nonEmptyLines.length === 0) {
+		return { rows: [], issues: [] };
+	}
+
+	const issues: CSVRowIssue[] = [];
+	const rows: TournamentResult[] = [];
+
+	const requiredHeaders = ["tournamentid", "golfername", "rank"] as const;
+
+	const first = nonEmptyLines[0];
+	const firstCells = splitCSVLine(first.rawRow);
+	const normalizedFirstCells = firstCells.map(normalizeHeaderCell);
+
+	const looksLikeHeader = normalizedFirstCells.some((cell) =>
+		requiredHeaders.includes(cell as (typeof requiredHeaders)[number]),
+	);
+
+	let header: string[] | undefined;
+	let indices = { tournamentId: 0, golferName: 1, rank: 2 };
+	let startAt = 0;
+
+	if (looksLikeHeader) {
+		header = firstCells;
+		startAt = 1;
+
+		const headerIndex = new Map<string, number>();
+		for (let i = 0; i < firstCells.length; i++) {
+			headerIndex.set(normalizeHeaderCell(firstCells[i] ?? ""), i);
+		}
+
+		const missing = requiredHeaders.filter((h) => !headerIndex.has(h));
+		if (missing.length > 0) {
+			issues.push({
+				rowNumber: first.rowNumber,
+				kind: "parse",
+				severity: "error",
+				code: "MISSING_REQUIRED_COLUMNS",
+				message: `Missing required column(s): ${missing.join(", ")}.`,
+				rawRow: first.rawRow,
+				cells: firstCells,
 			});
-		} catch (_error) {
-			console.warn(`Skipping invalid row ${i + 1}:`, parts);
+			// Fall back to positional parsing to still provide row-level diagnostics.
+		} else {
+			indices = {
+				tournamentId: headerIndex.get("tournamentid") ?? 0,
+				golferName: headerIndex.get("golfername") ?? 1,
+				rank: headerIndex.get("rank") ?? 2,
+			};
 		}
 	}
 
-	return results;
+	const expectedMinColumns =
+		Math.max(indices.tournamentId, indices.golferName, indices.rank) + 1;
+
+	for (let i = startAt; i < nonEmptyLines.length; i++) {
+		const { rawRow, rowNumber } = nonEmptyLines[i];
+		const cells = splitCSVLine(rawRow);
+
+		if (cells.length < expectedMinColumns) {
+			issues.push({
+				rowNumber,
+				kind: "parse",
+				severity: "error",
+				code: "MALFORMED_ROW",
+				message: `Malformed row: expected at least ${expectedMinColumns} columns.`,
+				rawRow,
+				cells,
+			});
+			continue;
+		}
+
+		const tournamentId = (cells[indices.tournamentId] ?? "").trim();
+		const golferName = (cells[indices.golferName] ?? "").trim();
+		const rankStr = (cells[indices.rank] ?? "").trim();
+
+		const missingFields: string[] = [];
+		if (!tournamentId) missingFields.push("TournamentID");
+		if (!golferName) missingFields.push("GolferName");
+		if (!rankStr) missingFields.push("Rank");
+
+		if (missingFields.length > 0) {
+			issues.push({
+				rowNumber,
+				kind: "parse",
+				severity: "error",
+				code: "MISSING_REQUIRED_VALUE",
+				message: `Missing required value(s): ${missingFields.join(", ")}.`,
+				rawRow,
+				cells,
+			});
+			continue;
+		}
+
+		// Avoid parseInt quirks like "1abc" -> 1.
+		if (!/^\d+$/.test(rankStr)) {
+			issues.push({
+				rowNumber,
+				kind: "parse",
+				severity: "error",
+				code: "INVALID_RANK",
+				message: `Invalid Rank value: "${rankStr}".`,
+				rawRow,
+				cells,
+			});
+			continue;
+		}
+
+		const rank = Number.parseInt(rankStr, 10);
+		rows.push({ tournamentId, golferName, rank });
+
+		// Domain validation warnings/errors are separate from parse errors.
+		if (rank < 1 || rank > 10) {
+			issues.push({
+				rowNumber,
+				kind: "validation",
+				severity: "warning",
+				code: "RANK_OUT_OF_RANGE",
+				message: "Rank is outside the expected 1-10 range.",
+				rawRow,
+				cells,
+			});
+		}
+	}
+
+	return { rows, issues, header };
+}
+
+export function parseTournamentCSV(csvContent: string): TournamentResult[] {
+	return parseTournamentCSVWithDiagnostics(csvContent).rows;
 }
 
 export function validateResults(results: TournamentResult[]): {
@@ -65,6 +230,29 @@ export function validateResults(results: TournamentResult[]): {
 		valid: errors.length === 0,
 		errors,
 		warnings,
+	};
+}
+
+export interface TournamentValidationIssue {
+	rowNumber: number;
+	severity: "error" | "warning";
+	code: string;
+	message: string;
+	tournamentId?: string;
+	golferName?: string;
+}
+
+export interface ImportPreview {
+	validRows: TournamentResult[];
+	issues: (CSVRowIssue | TournamentValidationIssue)[];
+	canCommit: boolean;
+	summary: {
+		totalRows: number;
+		validRows: number;
+		errors: number;
+		warnings: number;
+		unknownTournaments: string[];
+		unknownGolfers: string[];
 	};
 }
 

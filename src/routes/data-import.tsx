@@ -2,16 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertCircle,
 	CheckCircle,
+	Database,
 	Download,
 	History,
 	Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { NotAuthorized } from "@/components/NotAuthorized";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import type { ImportPreview } from "@/lib/csv-parser";
+import { getCSVTemplate } from "@/lib/csv-parser";
+import { commitImport, previewImport } from "@/lib/import-server";
 import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/data-import")({
@@ -28,16 +32,49 @@ export const Route = createFileRoute("/data-import")({
 });
 
 function DataImport() {
-	const { authorized } = Route.useRouteContext();
+	const routeContext = Route.useRouteContext();
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [uploadStatus, setUploadStatus] = useState<
-		"idle" | "uploading" | "success" | "error"
+		"idle" | "uploading" | "preview" | "success" | "error"
 	>("idle");
 	const [uploadProgress, setUploadProgress] = useState(0);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [preview, setPreview] = useState<ImportPreview | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
-	if (authorized === false) {
+	// Handle authorization
+	if (routeContext.authorized === false || routeContext.redirectTo) {
 		return <NotAuthorized />;
 	}
+
+	const handleFileSelect = async (file: File) => {
+		if (!file.name.endsWith(".csv")) {
+			setError("Please select a CSV file");
+			return;
+		}
+
+		setSelectedFile(file);
+		setError(null);
+		setUploadStatus("uploading");
+		setUploadProgress(0);
+
+		try {
+			// Read file content
+			const csvContent = await file.text();
+			setUploadProgress(50);
+
+			// Get preview from server
+			const previewResult = await previewImport({ data: { csvContent } });
+			setUploadProgress(100);
+
+			setPreview(previewResult);
+			setUploadStatus("preview");
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to process file");
+			setUploadStatus("error");
+		}
+	};
 
 	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault();
@@ -51,24 +88,61 @@ function DataImport() {
 	const handleDrop = (e: React.DragEvent) => {
 		e.preventDefault();
 		setIsDragging(false);
-		// Handle file drop logic here
-		simulateUpload();
+
+		const files = e.dataTransfer.files;
+		if (files.length > 0) {
+			handleFileSelect(files[0]);
+		}
 	};
 
-	const simulateUpload = () => {
-		setUploadStatus("uploading");
-		setUploadProgress(0);
+	const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (files && files.length > 0) {
+			handleFileSelect(files[0]);
+		}
+	};
 
-		const progressInterval = setInterval(() => {
-			setUploadProgress((prev) => {
-				if (prev >= 100) {
-					clearInterval(progressInterval);
-					setUploadStatus("success");
-					return 100;
-				}
-				return prev + 10;
+	const downloadTemplate = () => {
+		const template = getCSVTemplate();
+		const blob = new Blob([template], { type: "text/csv" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "tournament-template.csv";
+		a.click();
+		URL.revokeObjectURL(url);
+	};
+
+	const resetImport = () => {
+		setSelectedFile(null);
+		setPreview(null);
+		setError(null);
+		setUploadStatus("idle");
+		setUploadProgress(0);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
+	};
+
+	const handleCommit = async () => {
+		if (!preview || !preview.canCommit) return;
+
+		setUploadStatus("uploading");
+		try {
+			const result = await commitImport({
+				data: { results: preview.validRows },
 			});
-		}, 200);
+			if (result.success) {
+				setUploadStatus("success");
+				// You could add a success message here
+			} else {
+				setError(result.message);
+				setUploadStatus("error");
+			}
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to commit import");
+			setUploadStatus("error");
+		}
 	};
 
 	return (
@@ -86,8 +160,8 @@ function DataImport() {
 									Bring in tournament results
 								</h1>
 								<p className="mt-2 max-w-2xl text-sm md:text-base text-muted-foreground">
-									Upload a CSV to update scoring. This page is styled and ready; wire
-									the actual import logic when you’re ready.
+									Upload a CSV to update scoring. This page is styled and ready;
+									wire the actual import logic when you’re ready.
 								</p>
 							</div>
 
@@ -95,6 +169,7 @@ function DataImport() {
 								<Button
 									variant="outline"
 									className="h-10 px-5 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+									onClick={downloadTemplate}
 								>
 									<Download className="size-4" />
 									Template
@@ -126,11 +201,19 @@ function DataImport() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="p-6 space-y-5">
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept=".csv"
+								onChange={handleFileInputChange}
+								className="hidden"
+							/>
 							<button
 								type="button"
 								onDragOver={handleDragOver}
 								onDragLeave={handleDragLeave}
 								onDrop={handleDrop}
+								onClick={() => fileInputRef.current?.click()}
 								className={[
 									"w-full rounded-2xl border border-dashed px-6 py-10 text-left transition-colors",
 									"bg-background/20 hover:bg-background/25",
@@ -170,15 +253,22 @@ function DataImport() {
 									</div>
 
 									<div className="flex items-center gap-2">
-										{uploadStatus === "success" ? (
+										{uploadStatus === "preview" ||
+										uploadStatus === "success" ? (
 											<Button
 												variant="outline"
 												className="h-10 border-border/80 bg-background/30 hover:bg-background/40 font-semibold"
+												onClick={resetImport}
 											>
 												Import another
 											</Button>
 										) : (
-											<Button className="h-10 font-semibold">Select file</Button>
+											<Button
+												className="h-10 font-semibold"
+												onClick={() => fileInputRef.current?.click()}
+											>
+												Select file
+											</Button>
 										)}
 									</div>
 								</div>
@@ -193,9 +283,71 @@ function DataImport() {
 								)}
 							</button>
 
+							{/* Preview Section */}
+							{preview && (
+								<div className="rounded-xl border border-border/70 bg-background/20 p-4">
+									<div className="flex items-center justify-between gap-3">
+										<h3 className="text-sm font-black tracking-tight">
+											Import Preview
+										</h3>
+										<Badge
+											variant={preview.canCommit ? "default" : "destructive"}
+											className={
+												preview.canCommit
+													? "bg-primary/15 border-primary/30"
+													: ""
+											}
+										>
+											{preview.canCommit ? "Ready to import" : "Has errors"}
+										</Badge>
+									</div>
+									<div className="mt-3 space-y-2 text-sm">
+										<div className="flex justify-between">
+											<span>Total rows:</span>
+											<span className="font-semibold">
+												{preview.summary.totalRows}
+											</span>
+										</div>
+										<div className="flex justify-between">
+											<span>Valid rows:</span>
+											<span className="font-semibold text-green-600">
+												{preview.summary.validRows}
+											</span>
+										</div>
+										<div className="flex justify-between">
+											<span>Errors:</span>
+											<span className="font-semibold text-red-600">
+												{preview.summary.errors}
+											</span>
+										</div>
+										<div className="flex justify-between">
+											<span>Warnings:</span>
+											<span className="font-semibold text-yellow-600">
+												{preview.summary.warnings}
+											</span>
+										</div>
+									</div>
+									{preview.canCommit && (
+										<div className="mt-4 pt-4 border-t border-border/70">
+											<Button
+												onClick={handleCommit}
+												disabled={uploadStatus === "uploading"}
+												className="w-full"
+											>
+												{uploadStatus === "uploading"
+													? "Importing..."
+													: "Commit Import"}
+											</Button>
+										</div>
+									)}
+								</div>
+							)}
+
 							<div className="rounded-xl border border-border/70 bg-background/20 p-4">
 								<div className="flex items-center justify-between gap-3">
-									<h3 className="text-sm font-black tracking-tight">CSV format</h3>
+									<h3 className="text-sm font-black tracking-tight">
+										CSV format
+									</h3>
 									<Badge variant="outline" className="bg-background/25">
 										TournamentID • GolferName • Rank
 									</Badge>
@@ -282,12 +434,16 @@ function DataImport() {
 
 						<Card className="scorecard">
 							<CardHeader className="border-b border-border/70 bg-background/20">
-								<CardTitle className="text-lg font-black">Import stats</CardTitle>
+								<CardTitle className="text-lg font-black">
+									Import stats
+								</CardTitle>
 							</CardHeader>
 							<CardContent className="p-6">
 								<div className="grid grid-cols-2 gap-3">
 									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
-										<div className="text-xl font-black text-foreground">156</div>
+										<div className="text-xl font-black text-foreground">
+											156
+										</div>
 										<div className="mt-1 text-[11px] text-muted-foreground">
 											Total
 										</div>
@@ -307,7 +463,9 @@ function DataImport() {
 										</div>
 									</div>
 									<div className="rounded-xl border border-border/70 bg-background/20 p-3 text-center">
-										<div className="text-xl font-black text-foreground">98%</div>
+										<div className="text-xl font-black text-foreground">
+											98%
+										</div>
 										<div className="mt-1 text-[11px] text-muted-foreground">
 											Rate
 										</div>
