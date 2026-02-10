@@ -56,7 +56,7 @@ const internalErrorResponse = (message: string): ServerFnErrorResponse => ({
 	},
 });
 
-async function requireServerRole(
+export async function requireServerRole(
 	allowedRoles?: Role[],
 ): Promise<ServerFnErrorResponse | { success: true; role: Role }> {
 	const headers = getRequestHeaders();

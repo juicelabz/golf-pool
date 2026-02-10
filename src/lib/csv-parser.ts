@@ -18,8 +18,31 @@ export interface CSVRowIssue {
 	cells?: string[];
 }
 
+export type TournamentValidationIssue = CSVRowIssue & {
+	kind: "validation";
+	tournamentId?: string;
+	golferName?: string;
+};
+
+export type ImportPreview = {
+	validRows: TournamentResult[];
+	issues: Array<CSVRowIssue | TournamentValidationIssue>;
+	canCommit: boolean;
+	summary: {
+		totalRows: number;
+		validRows: number;
+		errors: number;
+		warnings: number;
+		unknownTournaments: string[];
+		unknownGolfers: string[];
+	};
+};
+
 export type ParseTournamentCSVResult = {
 	rows: TournamentResult[];
+	parsedRows: Array<
+		TournamentResult & { rowNumber: number; rawRow?: string; cells?: string[] }
+	>;
 	issues: CSVRowIssue[];
 	header?: string[];
 };
@@ -71,11 +94,14 @@ export function parseTournamentCSVWithDiagnostics(
 		.filter((l) => l.rawRow.trim().length > 0);
 
 	if (nonEmptyLines.length === 0) {
-		return { rows: [], issues: [] };
+		return { rows: [], parsedRows: [], issues: [] };
 	}
 
 	const issues: CSVRowIssue[] = [];
 	const rows: TournamentResult[] = [];
+	const parsedRows: Array<
+		TournamentResult & { rowNumber: number; rawRow?: string; cells?: string[] }
+	> = [];
 
 	const requiredHeaders = ["tournamentid", "golfername", "rank"] as const;
 
@@ -178,6 +204,15 @@ export function parseTournamentCSVWithDiagnostics(
 		}
 
 		const rank = Number.parseInt(rankStr, 10);
+		const parsedRow = {
+			tournamentId,
+			golferName,
+			rank,
+			rowNumber,
+			rawRow,
+			cells,
+		};
+		parsedRows.push(parsedRow);
 		rows.push({ tournamentId, golferName, rank });
 
 		// Domain validation warnings/errors are separate from parse errors.
@@ -194,7 +229,7 @@ export function parseTournamentCSVWithDiagnostics(
 		}
 	}
 
-	return { rows, issues, header };
+	return { rows, parsedRows, issues, header };
 }
 
 export function parseTournamentCSV(csvContent: string): TournamentResult[] {
@@ -230,29 +265,6 @@ export function validateResults(results: TournamentResult[]): {
 		valid: errors.length === 0,
 		errors,
 		warnings,
-	};
-}
-
-export interface TournamentValidationIssue {
-	rowNumber: number;
-	severity: "error" | "warning";
-	code: string;
-	message: string;
-	tournamentId?: string;
-	golferName?: string;
-}
-
-export interface ImportPreview {
-	validRows: TournamentResult[];
-	issues: (CSVRowIssue | TournamentValidationIssue)[];
-	canCommit: boolean;
-	summary: {
-		totalRows: number;
-		validRows: number;
-		errors: number;
-		warnings: number;
-		unknownTournaments: string[];
-		unknownGolfers: string[];
 	};
 }
 

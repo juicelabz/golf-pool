@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertCircle,
 	CheckCircle,
-	Database,
 	Download,
 	History,
 	Upload,
@@ -282,6 +281,21 @@ function DataImport() {
 									</div>
 								)}
 							</button>
+
+							{selectedFile && (
+								<div className="rounded-xl border border-border/70 bg-background/20 px-4 py-3 text-xs text-muted-foreground">
+									Selected file:{" "}
+									<span className="font-semibold text-foreground">
+										{selectedFile.name}
+									</span>
+								</div>
+							)}
+
+							{error && (
+								<div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+									{error}
+								</div>
+							)}
 
 							{/* Preview Section */}
 							{preview && (

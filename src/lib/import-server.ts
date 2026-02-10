@@ -53,7 +53,7 @@ async function previewImportData({
 	const validRows: TournamentResult[] = [];
 
 	// Validate each row
-	for (const row of parseResult.rows) {
+	for (const row of parseResult.parsedRows) {
 		const tournamentId = row.tournamentId.toLowerCase().trim();
 		const golferName = row.golferName.toLowerCase().trim();
 
@@ -61,7 +61,8 @@ async function previewImportData({
 		if (!tournamentMap.has(tournamentId)) {
 			unknownTournaments.add(row.tournamentId);
 			validationIssues.push({
-				rowNumber: 0, // We'll set this later if needed
+				rowNumber: row.rowNumber,
+				kind: "validation",
 				severity: "error",
 				code: "UNKNOWN_TOURNAMENT",
 				message: `Tournament "${row.tournamentId}" not found in database`,
@@ -74,7 +75,8 @@ async function previewImportData({
 		if (!golferMap.has(golferName)) {
 			unknownGolfers.add(row.golferName);
 			validationIssues.push({
-				rowNumber: 0, // We'll set this later if needed
+				rowNumber: row.rowNumber,
+				kind: "validation",
 				severity: "error",
 				code: "UNKNOWN_GOLFER",
 				message: `Golfer "${row.golferName}" not found in database`,
@@ -84,7 +86,11 @@ async function previewImportData({
 		}
 
 		// Row is valid
-		validRows.push(row);
+		validRows.push({
+			tournamentId: row.tournamentId,
+			golferName: row.golferName,
+			rank: row.rank,
+		});
 	}
 
 	// Count errors and warnings

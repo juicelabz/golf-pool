@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLeaderboardSnapshot } from "./leaderboard-snapshot";
+import { buildLeaderboardSnapshot } from "./leaderboard-snapshot-core";
 import type { Golfer, Member, Roster, Scoring, Tournament } from "./schema";
 
 const date = new Date("2026-01-01T00:00:00.000Z");
