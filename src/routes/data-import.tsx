@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
 	AlertCircle,
 	CheckCircle,
@@ -19,12 +19,16 @@ import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/data-import")({
 	component: DataImport,
-	beforeLoad: async () => {
+	beforeLoad: async ({ location }) => {
 		const result = await requireRole(["admin", "data"]);
 		if (!result.authenticated) {
-			return {
-				redirectTo: "/login",
-			};
+			const redirectPath = `${location.pathname}${location.search ?? ""}${
+				location.hash ?? ""
+			}`;
+			throw redirect({
+				to: "/login",
+				search: { redirect: redirectPath },
+			});
 		}
 		return result;
 	},
@@ -43,7 +47,7 @@ function DataImport() {
 	const [error, setError] = useState<string | null>(null);
 
 	// Handle authorization
-	if (routeContext.authorized === false || routeContext.redirectTo) {
+	if (routeContext.authorized === false) {
 		return <NotAuthorized />;
 	}
 

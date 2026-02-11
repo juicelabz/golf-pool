@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useRouter,
+} from "@tanstack/react-router";
 import { Flag, KeyRound, Mail, User } from "lucide-react";
 import { useId, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -16,9 +21,7 @@ export const Route = createFileRoute("/signup")({
 	beforeLoad: async () => {
 		const result = await requireAuth();
 		if (result.authenticated) {
-			return {
-				redirectTo: "/leaderboard",
-			};
+			throw redirect({ to: "/leaderboard" });
 		}
 		return result;
 	},

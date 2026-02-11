@@ -1,17 +1,16 @@
-import * as React from "react";
 import {
 	ChevronDownIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
 } from "lucide-react";
+import * as React from "react";
 import {
+	type DayButton,
 	DayPicker,
 	getDefaultClassNames,
-	type DayButton,
 } from "react-day-picker";
-
-import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface CalendarRootProps extends React.ComponentProps<"div"> {
 	rootRef?: React.Ref<HTMLDivElement>;
@@ -176,15 +175,15 @@ function Calendar({
 				),
 				hidden: cn("invisible", defaultClassNames.hidden),
 				...classNames,
-				}}
-				components={{
-					Root: CalendarRoot,
-					Chevron: CalendarChevron,
-					DayButton: CalendarDayButton,
-					WeekNumber: CalendarWeekNumber,
-					...components,
-				}}
-				{...props}
+			}}
+			components={{
+				Root: CalendarRoot,
+				Chevron: CalendarChevron,
+				DayButton: CalendarDayButton,
+				WeekNumber: CalendarWeekNumber,
+				...components,
+			}}
+			{...props}
 		/>
 	);
 }

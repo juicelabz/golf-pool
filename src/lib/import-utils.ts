@@ -1,5 +1,5 @@
-import { createId } from "@paralleldrive/cuid2";
 import fs from "node:fs";
+import { createId } from "@paralleldrive/cuid2";
 
 export interface GolferData {
 	name: string;

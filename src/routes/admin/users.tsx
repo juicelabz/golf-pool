@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
 	RefreshCw,
 	Search,
@@ -17,12 +17,16 @@ import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/admin/users")({
 	component: UserManagement,
-	beforeLoad: async () => {
+	beforeLoad: async ({ location }) => {
 		const result = await requireRole(["admin"]);
 		if (!result.authenticated) {
-			return {
-				redirectTo: "/login",
-			};
+			const redirectPath = `${location.pathname}${location.search ?? ""}${
+				location.hash ?? ""
+			}`;
+			throw redirect({
+				to: "/login",
+				search: { redirect: redirectPath },
+			});
 		}
 		return result;
 	},

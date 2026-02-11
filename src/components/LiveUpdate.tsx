@@ -62,16 +62,16 @@ export function LiveUpdate({
 
 			<div className="flex-1 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
 
-				<div className="flex items-center gap-2">
-					<span className="text-xs text-muted-foreground">
-						Last: {lastUpdated.toLocaleTimeString()}
-					</span>
-					<button
-						type="button"
-						onClick={() => {
-							setIsRefreshing(true);
-							if (onRefresh) {
-								onRefresh();
+			<div className="flex items-center gap-2">
+				<span className="text-xs text-muted-foreground">
+					Last: {lastUpdated.toLocaleTimeString()}
+				</span>
+				<button
+					type="button"
+					onClick={() => {
+						setIsRefreshing(true);
+						if (onRefresh) {
+							onRefresh();
 						}
 						setTimeout(() => setIsRefreshing(false), 2000);
 					}}
