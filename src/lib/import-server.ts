@@ -11,10 +11,37 @@ import { calculatePoints } from "./scoring";
 import { requireServerRole } from "./server-functions";
 
 async function previewImportData({
-	csvContent,
+	data,
 }: {
-	csvContent: string;
+	data: {
+		csvContent: string;
+	};
 }): Promise<ImportPreview> {
+	const csvContent = data?.csvContent;
+	if (typeof csvContent !== "string") {
+		return {
+			validRows: [],
+			issues: [
+				{
+					rowNumber: 0,
+					kind: "parse",
+					severity: "error",
+					code: "INVALID_PAYLOAD",
+					message: "Invalid import payload. Expected CSV text content.",
+				},
+			],
+			canCommit: false,
+			summary: {
+				totalRows: 0,
+				validRows: 0,
+				errors: 1,
+				warnings: 0,
+				unknownTournaments: [],
+				unknownGolfers: [],
+			},
+		};
+	}
+
 	// First parse the CSV with diagnostics
 	const parseResult = parseTournamentCSVWithDiagnostics(csvContent);
 
@@ -123,10 +150,21 @@ export const previewImport = createServerFn({ method: "POST" }).handler(
 );
 
 async function commitImportData({
-	results,
+	data,
 }: {
-	results: TournamentResult[];
+	data: {
+		results: TournamentResult[];
+	};
 }): Promise<{ success: boolean; message: string; count: number }> {
+	const results = data?.results;
+	if (!Array.isArray(results)) {
+		return {
+			success: false,
+			message: "Invalid import payload. Expected an array of results.",
+			count: 0,
+		};
+	}
+
 	// Check authorization first
 	const authResult = await requireServerRole(["admin", "data"]);
 	if (!authResult.success) {
@@ -178,18 +216,28 @@ async function commitImportData({
 		};
 	}
 
-	// Insert into scoring table
+	// Upsert scoring rows so re-imports update existing results for the same
+	// tournament+golfer pair.
 	for (const processed of processedResults) {
 		const points = calculatePoints(processed.rank, processed.tournamentType);
 
-		await db.insert(scoring).values({
-			id: `scoring-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-			tournamentId: processed.tournamentId,
-			golferId: processed.golferId,
-			rank: processed.rank,
-			points,
-			createdAt: new Date(),
-		});
+		await db
+			.insert(scoring)
+			.values({
+				id: `scoring-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+				tournamentId: processed.tournamentId,
+				golferId: processed.golferId,
+				rank: processed.rank,
+				points,
+				createdAt: new Date(),
+			})
+			.onConflictDoUpdate({
+				target: [scoring.tournamentId, scoring.golferId],
+				set: {
+					rank: processed.rank,
+					points,
+				},
+			});
 	}
 
 	return {

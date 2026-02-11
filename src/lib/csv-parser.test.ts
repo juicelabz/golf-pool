@@ -70,4 +70,20 @@ describe("parseTournamentCSVWithDiagnostics", () => {
 		expect(result.rows).toEqual([]);
 		expect(result.issues).toEqual([]);
 	});
+
+	it("accepts golf tie rank notation", () => {
+		const csv = [
+			"TournamentID,GolferName,Rank",
+			"sony-open,Tommy Fleetwood,T2",
+			"sony-open,Rory McIlroy,2T",
+		].join("\n");
+
+		const result = parseTournamentCSVWithDiagnostics(csv);
+
+		expect(result.rows).toEqual([
+			{ tournamentId: "sony-open", golferName: "Tommy Fleetwood", rank: 2 },
+			{ tournamentId: "sony-open", golferName: "Rory McIlroy", rank: 2 },
+		]);
+		expect(result.issues).toEqual([]);
+	});
 });

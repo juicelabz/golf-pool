@@ -39,4 +39,3 @@ describe("parseTournamentsCSV (schedule)", () => {
 		});
 	});
 });
-

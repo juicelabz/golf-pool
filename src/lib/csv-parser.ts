@@ -51,6 +51,19 @@ function normalizeHeaderCell(value: string): string {
 	return value.toLowerCase().replace(/\s+/g, "");
 }
 
+function parseRankValue(rankStr: string): number | null {
+	const trimmed = rankStr.trim();
+
+	// Support golf tie notation like "T2" and "2T" in addition to plain "2".
+	const tieMatch = trimmed.match(/^(?:[Tt]\s*)?(\d+)(?:\s*[Tt])?$/);
+	if (!tieMatch) {
+		return null;
+	}
+
+	const rank = Number.parseInt(tieMatch[1] ?? "", 10);
+	return Number.isNaN(rank) ? null : rank;
+}
+
 // Minimal RFC4180-style parser (quotes + escaped double quotes). Good enough for our expected inputs,
 // and provides deterministic row/cell handling for diagnostics.
 function splitCSVLine(line: string): string[] {
@@ -189,8 +202,8 @@ export function parseTournamentCSVWithDiagnostics(
 			continue;
 		}
 
-		// Avoid parseInt quirks like "1abc" -> 1.
-		if (!/^\d+$/.test(rankStr)) {
+		const rank = parseRankValue(rankStr);
+		if (rank === null) {
 			issues.push({
 				rowNumber,
 				kind: "parse",
@@ -203,7 +216,6 @@ export function parseTournamentCSVWithDiagnostics(
 			continue;
 		}
 
-		const rank = Number.parseInt(rankStr, 10);
 		const parsedRow = {
 			tournamentId,
 			golferName,

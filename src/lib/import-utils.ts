@@ -162,15 +162,13 @@ export function parseTournamentsCSV(): TournamentData[] {
 
 	const year = 2026;
 	let currentSegment: number | null = null;
-
-	// Preserve existing IDs so we don't break existing scoring rows.
-	const legacyIdsByName = new Map<string, string>([
-		["sony open in hawaii", "sony-open"],
-		["the american express", "american-express"],
-		["farmers insurance open", "farmers-insurance"],
-		["wm phoenix open", "waste-management"],
-		["at&t pebble beach pro-am", "pebble-beach"],
-		["genesis invitational", "genesis-championship"],
+	const legacyIdsBySlug = new Map<string, string>([
+		["sony-open-in-hawaii", "sony-open"],
+		["the-american-express", "american-express"],
+		["farmers-insurance-open", "farmers-insurance"],
+		["wm-phoenix-open", "waste-management"],
+		["at-and-t-pebble-beach-pro-am", "pebble-beach"],
+		["genesis-invitational", "genesis-championship"],
 	]);
 
 	const tournaments: TournamentData[] = [];
@@ -216,9 +214,8 @@ export function parseTournamentsCSV(): TournamentData[] {
 			.replace(/[-\s]+$/g, "")
 			.trim();
 
-		const normalizedName = name.toLowerCase();
-		const legacyId = legacyIdsByName.get(normalizedName);
-		const id = legacyId ?? slugifyTournamentId(name);
+		const slugifiedId = slugifyTournamentId(name);
+		const id = legacyIdsBySlug.get(slugifiedId) ?? slugifiedId;
 
 		const { startDate, endDate } = parseScheduleDateRange({
 			startMonth,
