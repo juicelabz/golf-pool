@@ -22,6 +22,121 @@ export interface MemberData {
 	roster?: { [key: number]: string };
 }
 
+export interface TeamRosterEntry {
+	memberName: string;
+	golfersByCategory: Record<number, string>;
+}
+
+/** Read CSV preserving empty cells so column indices stay stable. */
+function parseCSVRaw(filePath: string): string[][] {
+	const content = fs.readFileSync(filePath, "utf-8");
+	return content
+		.split("\n")
+		.map((line) => line.split(",").map((cell) => cell.trim()));
+}
+
+/**
+ * Parse team-rosters.csv to extract member → 10 golfers mapping.
+ * Format: Member name row, "Golfer,1,,2,..." header, then Segment 1 row.
+ * Golfer names are in columns 1,3,5,7,9,11,13,15,17,19 (categories 1–10).
+ */
+export function parseTeamRostersCSV(filePath: string): TeamRosterEntry[] {
+	const rows = parseCSVRaw(filePath);
+	const result: TeamRosterEntry[] = [];
+	const GOLFER_COL_INDICES = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+
+	for (let i = 0; i < rows.length; i++) {
+		const row = rows[i];
+		const firstCell = (row[0] ?? "").trim();
+		if (
+			!firstCell ||
+			firstCell === "Total" ||
+			firstCell === "Golfer" ||
+			firstCell.includes("Segment")
+		) {
+			continue;
+		}
+		const headerRow = rows[i + 1];
+		if (!headerRow?.[0]?.includes("Golfer")) {
+			continue;
+		}
+		// Segment 1 row has the roster
+		const segment1Row = rows[i + 2];
+		if (!segment1Row?.[0]?.startsWith("Segment 1")) {
+			continue;
+		}
+		const golfersByCategory: Record<number, string> = {};
+		for (let c = 0; c < 10; c++) {
+			const name = (segment1Row[GOLFER_COL_INDICES[c]] ?? "").trim();
+			if (name) {
+				golfersByCategory[c + 1] = name;
+			}
+		}
+		if (Object.keys(golfersByCategory).length === 10) {
+			result.push({ memberName: firstCell, golfersByCategory });
+		}
+	}
+
+	return result;
+}
+
+/** Replace common non-ASCII chars that NFD does not decompose. */
+const DIACRITIC_REPLACEMENTS: [RegExp, string][] = [
+	[/ø/gi, "o"],
+	[/æ/gi, "ae"],
+	[/ö/gi, "o"],
+	[/ü/gi, "u"],
+	[/ä/gi, "a"],
+];
+
+/**
+ * Normalize golfer name for matching (handles Å→A, ø→o, ö→o, etc.).
+ * Preserves canonical display names in DB; use this only for lookup.
+ */
+export function normalizeGolferNameForMatch(name: string): string {
+	let s = name
+		.normalize("NFD")
+		.replace(/\p{M}/gu, "")
+		.replace(/\s+/g, " ")
+		.trim()
+		.toLowerCase();
+	for (const [re, replacement] of DIACRITIC_REPLACEMENTS) {
+		s = s.replace(re, replacement);
+	}
+	return s;
+}
+
+/** Alias map for CSV name variants → normalized canonical. */
+const GOLFER_NAME_ALIASES: Record<string, string> = {
+	"cam young": "cameron young",
+	"rasmus højgaard": "rasmus hojgaard",
+	"stephen jäger": "stephan jaeger",
+	"stephen jaeger": "stephan jaeger",
+	"stephan jäger": "stephan jaeger",
+	"stephan jager": "stephan jaeger",
+};
+
+/**
+ * Resolve golfer name to a normalized key for lookup.
+ * Handles UTF-8 mojibake (e.g. Ã…→Å→a), diacritics, and aliases.
+ */
+export function resolveGolferNameForLookup(name: string): string {
+	let s = normalizeGolferNameForMatch(name);
+	// Fix common mojibake (UTF-8 read as Latin-1: Ã…=Å, Ã¤=ä, Ã¶=ö, Ã¸=ø)
+	s = s
+		.replace(/\u00c3\u00a5/gi, "a")
+		.replace(/\u00c3\u00a4/gi, "a")
+		.replace(/\u00c3\u00b6/gi, "o")
+		.replace(/\u00c3\u00b8/gi, "o")
+		.replace(/\u00c3\u00bc/gi, "u")
+		.replace(/Ã…/gi, "a")
+		.replace(/Ã¤/gi, "a")
+		.replace(/Ã¶/gi, "o")
+		.replace(/Ã¸/gi, "o")
+		.replace(/Ã¼/gi, "u");
+	return GOLFER_NAME_ALIASES[s] ?? s;
+}
+
 export function parseCSV(filePath: string): string[][] {
 	const content = fs.readFileSync(filePath, "utf-8");
 	return content

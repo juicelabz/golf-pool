@@ -7,6 +7,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "bun --bun scripts/vitest-all.ts",
+    "seed": "bun run src/lib/seed.ts",
+    "import-rosters": "bun run src/lib/populate-rosters.ts",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "check": "biome check"

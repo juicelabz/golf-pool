@@ -5,6 +5,7 @@ import {
 	parseMembersCSV,
 	parseTournamentsCSV,
 } from "./import-utils";
+import { importRostersFromCSV } from "./populate-rosters";
 import {
 	golfers,
 	members,
@@ -75,6 +76,21 @@ export async function seedDatabase() {
 			await db.insert(tournaments).values(newTournament);
 		}
 		console.log(`✅ Imported ${tournamentData.length} tournaments`);
+
+		// Seed rosters from team-rosters.csv
+		console.log("📋 Importing team rosters...");
+		const rosterResult = await importRostersFromCSV("./data/team-rosters.csv");
+		console.log(
+			`✅ Imported ${rosterResult.insertedCount} roster rows for ${rosterResult.memberCount} members`,
+		);
+		if (
+			rosterResult.missingMembers.length > 0 ||
+			rosterResult.missingGolfers.length > 0
+		) {
+			console.warn(
+				"⚠️ Roster import had missing matches — check members and golfers",
+			);
+		}
 
 		console.log("🎉 Database seeding completed successfully!");
 	} catch (error) {
