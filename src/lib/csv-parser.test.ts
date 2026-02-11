@@ -71,4 +71,3 @@ describe("parseTournamentCSVWithDiagnostics", () => {
 		expect(result.issues).toEqual([]);
 	});
 });
-

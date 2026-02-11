@@ -15,11 +15,9 @@ async function checkDatabase() {
 
 	// Show some sample data
 	console.log("\n📊 Sample golfers:");
-	golferCount
-		.slice(0, 5)
-		.forEach((g) => {
-			console.log(`  - ${g.name} (Category ${g.category})`);
-		});
+	golferCount.slice(0, 5).forEach((g) => {
+		console.log(`  - ${g.name} (Category ${g.category})`);
+	});
 
 	console.log("\n👥 Sample members:");
 	memberCount.slice(0, 5).forEach((m) => {
@@ -27,11 +25,9 @@ async function checkDatabase() {
 	});
 
 	console.log("\n🏆 Sample tournaments:");
-	tournamentCount
-		.slice(0, 3)
-		.forEach((t) => {
-			console.log(`  - ${t.name} (${t.type}, Segment ${t.segment})`);
-		});
+	tournamentCount.slice(0, 3).forEach((t) => {
+		console.log(`  - ${t.name} (${t.type}, Segment ${t.segment})`);
+	});
 }
 
 checkDatabase().catch(console.error);

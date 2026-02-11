@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CreditCard, Database, LogOut, Users } from "lucide-react";
 import { NotAuthorized } from "../components/NotAuthorized";
 import { Button } from "../components/ui/button";
@@ -13,12 +13,16 @@ import { useAuth } from "../lib/use-auth";
 
 export const Route = createFileRoute("/admin")({
 	component: Admin,
-	beforeLoad: async () => {
+	beforeLoad: async ({ location }) => {
 		const result = await requireRole(["admin", "data"]);
 		if (!result.authenticated) {
-			return {
-				redirectTo: "/login",
-			};
+			const redirectPath = `${location.pathname}${location.search ?? ""}${
+				location.hash ?? ""
+			}`;
+			throw redirect({
+				to: "/login",
+				search: { redirect: redirectPath },
+			});
 		}
 		return result;
 	},

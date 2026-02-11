@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useRouter,
+} from "@tanstack/react-router";
 import { Flag, KeyRound, Mail } from "lucide-react";
 import { useId, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -18,9 +23,7 @@ export const Route = createFileRoute("/login")({
 	beforeLoad: async () => {
 		const result = await requireAuth();
 		if (result.authenticated) {
-			return {
-				redirectTo: "/leaderboard",
-			};
+			throw redirect({ to: "/leaderboard" });
 		}
 		return result;
 	},
@@ -52,8 +55,9 @@ function Login() {
 						"We couldn't sign you in. Check your email and password.",
 				);
 			} else {
-				const redirectTo =
-					redirect?.startsWith("/") ? redirect : "/leaderboard";
+				const redirectTo = redirect?.startsWith("/")
+					? redirect
+					: "/leaderboard";
 				router.navigate({ to: redirectTo });
 			}
 		} catch (err: any) {

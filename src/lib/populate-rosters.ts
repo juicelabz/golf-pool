@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { golfers, members, rosters, } from "./schema";
+import { golfers, members, rosters } from "./schema";
 
 async function populateMemberRosters() {
 	console.log("📊 Populating member rosters from CSV data...");

@@ -1,5 +1,10 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+	createRootRoute,
+	HeadContent,
+	redirect,
+	Scripts,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import * as React from "react";
 import { NotFound } from "@/components/NotFound";
@@ -27,9 +32,10 @@ export const Route = createRootRoute({
 			const redirectPath = `${location.pathname}${location.search ?? ""}${
 				location.hash ?? ""
 			}`;
-			return {
-				redirectTo: `/login?redirect=${encodeURIComponent(redirectPath)}`,
-			};
+			throw redirect({
+				to: "/login",
+				search: { redirect: redirectPath },
+			});
 		}
 		return result;
 	},

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { RefreshCw, Shield, ShieldAlert, Trash2, User, X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
@@ -28,12 +28,16 @@ import { requireRole } from "@/lib/session";
 
 export const Route = createFileRoute("/admin/users/$userId")({
 	component: UserDetail,
-	beforeLoad: async () => {
+	beforeLoad: async ({ location }) => {
 		const result = await requireRole(["admin"]);
 		if (!result.authenticated) {
-			return {
-				redirectTo: "/login",
-			};
+			const redirectPath = `${location.pathname}${location.search ?? ""}${
+				location.hash ?? ""
+			}`;
+			throw redirect({
+				to: "/login",
+				search: { redirect: redirectPath },
+			});
 		}
 		return result;
 	},
