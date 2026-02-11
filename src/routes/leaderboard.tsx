@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	type SearchSchemaInput,
+	useRouter,
+} from "@tanstack/react-router";
 import { Flag, RefreshCw, Sparkles, Trophy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
@@ -21,12 +26,14 @@ import { getLeaderboardSnapshot } from "../lib/leaderboard-snapshot";
 
 export const Route = createFileRoute("/leaderboard")({
 	component: Leaderboard,
-	validateSearch: (search: Record<string, unknown>) => ({
+	validateSearch: (
+		search: Record<string, unknown> & SearchSchemaInput,
+	): { page: number; pageSize: number } => ({
 		page: Number(search.page) || 1,
 		pageSize: Number(search.pageSize) || 20,
 	}),
 	loaderDeps: ({ search: { page, pageSize } }) => ({ page, pageSize }),
-	loader: async ({ deps: { page, pageSize } }) => {
+	loader: async ({ deps: { page = 1, pageSize = 20 } }) => {
 		return getLeaderboardSnapshot({
 			data: {
 				page,

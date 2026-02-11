@@ -1,4 +1,9 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	type SearchSchemaInput,
+} from "@tanstack/react-router";
 import { Flag, KeyRound, Mail } from "lucide-react";
 import { useId, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,7 +18,9 @@ import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/login")({
 	component: Login,
-	validateSearch: (search: Record<string, unknown>) => ({
+	validateSearch: (
+		search: Record<string, unknown> & SearchSchemaInput,
+	): { redirect?: string } => ({
 		redirect: typeof search.redirect === "string" ? search.redirect : undefined,
 	}),
 	beforeLoad: async () => {
@@ -54,8 +61,8 @@ function Login() {
 				const redirectTo = resolvePostLoginRedirect(redirect);
 				window.location.assign(redirectTo);
 			}
-		} catch (err: any) {
-			setError(err.message || "Sign-in failed. Please try again.");
+		} catch (err: unknown) {
+			setError((err as Error)?.message || "Sign-in failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}
