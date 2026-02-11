@@ -1,9 +1,4 @@
-import {
-	createFileRoute,
-	Link,
-	redirect,
-	useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Flag, KeyRound, Mail } from "lucide-react";
 import { useId, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -12,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { resolvePostLoginRedirect } from "@/lib/auth-redirect";
 import { requireAuth } from "@/lib/session";
 import { useAuth } from "@/lib/use-auth";
 
@@ -30,11 +26,10 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const router = useRouter();
 	const emailId = useId();
 	const passwordId = useId();
 	const { redirect } = Route.useSearch();
-	const { signIn } = useAuth();
+	const { signIn, refetch } = useAuth();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -55,10 +50,9 @@ function Login() {
 						"We couldn't sign you in. Check your email and password.",
 				);
 			} else {
-				const redirectTo = redirect?.startsWith("/")
-					? redirect
-					: "/leaderboard";
-				router.navigate({ to: redirectTo });
+				await refetch();
+				const redirectTo = resolvePostLoginRedirect(redirect);
+				window.location.assign(redirectTo);
 			}
 		} catch (err: any) {
 			setError(err.message || "Sign-in failed. Please try again.");

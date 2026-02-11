@@ -53,8 +53,10 @@ export function useAuth() {
 	const signIn = async (email: string, password: string) => {
 		try {
 			const result = await authClient.signIn.email({ email, password });
-			if (result.data) {
-				setSession(result.data);
+
+			if (!result.error) {
+				const sessionResult = await authClient.getSession();
+				setSession(sessionResult.data);
 			}
 			return result;
 		} catch (err) {
