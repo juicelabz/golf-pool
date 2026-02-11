@@ -6,6 +6,8 @@ import {
 } from "@tanstack/react-router";
 import { Flag, RefreshCw, Sparkles, Trophy } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/lib/use-auth";
+import { cn } from "@/lib/utils";
 import { Button } from "../components/ui/button";
 import {
 	Card,
@@ -48,6 +50,7 @@ function Leaderboard() {
 	const { page, pageSize } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const router = useRouter();
+	const { user } = useAuth();
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const lastUpdatedAt = new Date(data.lastUpdatedAt);
 	const lastUpdatedAtLabel = `${lastUpdatedAt.toLocaleTimeString()}.${String(
@@ -159,19 +162,48 @@ function Leaderboard() {
 											</tr>
 										</thead>
 										<tbody>
-											{data.members.map((member, index: number) => (
+											{data.members.map((member, index: number) => {
+												const rank = (page - 1) * pageSize + index + 1;
+												const isCurrentUser =
+													!!user?.id && member.userId === user.id;
+
+												return (
 												<tr
 													key={member.id}
-													className="border-b border-border/50 hover:bg-background/15 transition-colors"
+													className={cn(
+														"border-b border-border/50 transition-colors",
+														isCurrentUser
+															? "bg-primary/10 hover:bg-primary/15 ring-1 ring-inset ring-primary/25"
+															: "hover:bg-background/15",
+													)}
 												>
 													<td className="py-4 px-6">
-														<div className="flex items-center justify-center w-8 h-8 rounded-full bg-background/25 ring-1 ring-border/60 text-xs font-semibold">
-															{index + 1}
+														<div
+															className={cn(
+																"flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold",
+																isCurrentUser
+																	? "bg-primary/20 ring-1 ring-primary/40 text-primary"
+																	: "bg-background/25 ring-1 ring-border/60",
+															)}
+														>
+															{rank}
 														</div>
 													</td>
 													<td className="py-4 px-6">
-														<div className="text-foreground font-semibold">
+														<div
+															className={cn(
+																"font-semibold",
+																isCurrentUser
+																	? "text-primary"
+																	: "text-foreground",
+															)}
+														>
 															{member.name}
+															{isCurrentUser && (
+																<span className="ml-2 text-[10px] uppercase tracking-wider font-bold text-primary/70">
+																	You
+																</span>
+															)}
 														</div>
 													</td>
 													<td className="py-4 px-6 text-center">
@@ -195,7 +227,8 @@ function Leaderboard() {
 														{member.segment5Points}
 													</td>
 												</tr>
-											))}
+												);
+											})}
 										</tbody>
 									</table>
 								</div>
