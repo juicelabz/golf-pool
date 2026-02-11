@@ -239,18 +239,21 @@ function DataImport() {
 											<div className="text-base font-semibold">
 												{uploadStatus === "idle" && "Drop your CSV here"}
 												{uploadStatus === "uploading" && "Processing import…"}
-												{uploadStatus === "success" && "Upload complete"}
-												{uploadStatus === "error" && "Upload failed"}
+												{uploadStatus === "preview" && "Review import preview"}
+												{uploadStatus === "success" && "Import complete"}
+												{uploadStatus === "error" && "Import failed"}
 											</div>
 											<p className="mt-1 text-sm text-muted-foreground">
 												{uploadStatus === "idle" &&
 													"Drag & drop or click to select a file."}
 												{uploadStatus === "uploading" &&
 													"Parsing, validating, and staging scoring updates."}
+												{uploadStatus === "preview" &&
+													"Check the preview below, then commit when ready."}
 												{uploadStatus === "success" &&
-													"Data has been staged (hook up the real importer next)."}
+													"Scoring records have been saved to the database."}
 												{uploadStatus === "error" &&
-													"Something went wrong. Try again once wired."}
+													"Something went wrong. Check the details below and try again."}
 											</p>
 										</div>
 									</div>
@@ -402,13 +405,15 @@ function DataImport() {
 									{preview.summary.unknownGolfers.length > 0 && (
 										<div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-2.5 text-xs">
 											<p className="font-semibold text-yellow-700 dark:text-yellow-400">
-												Golfers not in the pool ({preview.summary.unknownGolfers.length}):
+												Golfers not in the pool (
+												{preview.summary.unknownGolfers.length}):
 											</p>
 											<p className="mt-1 text-yellow-700/80 dark:text-yellow-400/80">
 												{preview.summary.unknownGolfers.join(", ")}
 											</p>
 											<p className="mt-1.5 text-yellow-700/60 dark:text-yellow-400/60">
-												These rows will be skipped. If a golfer should be tracked, add them to the golfer list first.
+												These rows will be skipped. If a golfer should be
+												tracked, add them to the golfer list first.
 											</p>
 										</div>
 									)}
@@ -417,7 +422,8 @@ function DataImport() {
 									{preview.summary.unknownTournaments.length > 0 && (
 										<div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs">
 											<p className="font-semibold text-destructive">
-												Unknown tournaments ({preview.summary.unknownTournaments.length}):
+												Unknown tournaments (
+												{preview.summary.unknownTournaments.length}):
 											</p>
 											<p className="mt-1 text-destructive/80">
 												{preview.summary.unknownTournaments.join(", ")}
@@ -454,8 +460,8 @@ function DataImport() {
 								</div>
 								<pre className="mt-3 text-xs text-muted-foreground font-mono leading-relaxed">
 									TournamentID,GolferName,Rank{"\n"}
-									sony-open,Tommy Fleetwood,1{"\n"}
-									sony-open,Rory McIlroy,2{"\n"}…
+									the-open,Tommy Fleetwood,1{"\n"}
+									the-open,Rory McIlroy,2{"\n"}…
 								</pre>
 							</div>
 						</CardContent>

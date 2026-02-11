@@ -158,45 +158,52 @@ export const tournaments = sqliteTable("tournaments", {
 });
 
 // Scoring table (weekly results)
-export const scoring = sqliteTable("scoring", {
-	id: text("id").primaryKey(),
-	tournamentId: text("tournament_id")
-		.references(() => tournaments.id, { onDelete: "cascade" })
-		.notNull(),
-	golferId: text("golfer_id")
-		.references(() => golfers.id, { onDelete: "cascade" })
-		.notNull(),
-	rank: integer("rank").notNull(), // 1-10+ (top 10 only get points)
-	points: integer("points").notNull(), // Calculated based on rank and tournament type
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-		() => new Date(),
-	),
-});
-
-// Rosters table (member to golfer assignments)
-export const rosters = sqliteTable("rosters", {
-	id: text("id").primaryKey(),
-	memberId: text("member_id")
-		.references(() => members.id, { onDelete: "cascade" })
-		.notNull(),
-	golferId: text("golfer_id")
-		.references(() => golfers.id, { onDelete: "cascade" })
-		.notNull(),
-	category: integer("category").notNull(), // 1-10 (which slot the golfer fills)
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-		() => new Date(),
-	),
-});
-
-// Unique constraints
-export const rostersUnique = uniqueIndex("rosters_member_category_unique").on(
-	rosters.memberId,
-	rosters.category,
+export const scoring = sqliteTable(
+	"scoring",
+	{
+		id: text("id").primaryKey(),
+		tournamentId: text("tournament_id")
+			.references(() => tournaments.id, { onDelete: "cascade" })
+			.notNull(),
+		golferId: text("golfer_id")
+			.references(() => golfers.id, { onDelete: "cascade" })
+			.notNull(),
+		rank: integer("rank").notNull(), // 1-10+ (top 10 only get points)
+		points: integer("points").notNull(), // Calculated based on rank and tournament type
+		createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+			() => new Date(),
+		),
+	},
+	(table) => [
+		uniqueIndex("scoring_tournament_golfer_unique").on(
+			table.tournamentId,
+			table.golferId,
+		),
+	],
 );
 
-export const scoringUnique = uniqueIndex("scoring_tournament_golfer_unique").on(
-	scoring.tournamentId,
-	scoring.golferId,
+// Rosters table (member to golfer assignments)
+export const rosters = sqliteTable(
+	"rosters",
+	{
+		id: text("id").primaryKey(),
+		memberId: text("member_id")
+			.references(() => members.id, { onDelete: "cascade" })
+			.notNull(),
+		golferId: text("golfer_id")
+			.references(() => golfers.id, { onDelete: "cascade" })
+			.notNull(),
+		category: integer("category").notNull(), // 1-10 (which slot the golfer fills)
+		createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+			() => new Date(),
+		),
+	},
+	(table) => [
+		uniqueIndex("rosters_member_category_unique").on(
+			table.memberId,
+			table.category,
+		),
+	],
 );
 
 // Schema export
