@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { Flag, RefreshCw, Sparkles, Trophy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
@@ -345,8 +345,8 @@ function Leaderboard() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="p-6 space-y-3">
-								<Button className="w-full h-10 font-semibold">
-									View full rosters
+								<Button asChild className="w-full h-10 font-semibold">
+									<Link to="/rosters">View full rosters</Link>
 								</Button>
 								<Button
 									variant="outline"

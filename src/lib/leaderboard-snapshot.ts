@@ -191,6 +191,8 @@ export async function getLeaderboardSnapshotData({
 	});
 }
 
-export const getLeaderboardSnapshot = createServerFn({ method: "GET" }).handler(
-	getLeaderboardSnapshotData,
-);
+export const getLeaderboardSnapshot = createServerFn({ method: "GET" })
+	.inputValidator((data: { page: number; pageSize: number }) => data)
+	.handler(async ({ data }) => {
+		return await getLeaderboardSnapshotData(data);
+	});

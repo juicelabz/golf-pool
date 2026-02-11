@@ -7,6 +7,7 @@ import {
 	Settings,
 	Trophy,
 	User,
+	Users,
 	X,
 } from "lucide-react";
 import { useState } from "react";
@@ -54,6 +55,13 @@ export default function Header() {
 									<Trophy className="size-4 text-primary" />
 									Leaderboard
 								</Link>
+								<Link
+									to="/rosters"
+									className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/30 px-3 py-2 text-sm font-semibold hover:bg-background/40 transition-colors"
+								>
+									<Users className="size-4 text-[oklch(0.66_0.19_28)]" />
+									Rosters
+								</Link>
 								{user?.role === "admin" || user?.role === "data" ? (
 									<Link
 										to="/admin"
@@ -70,7 +78,7 @@ export default function Header() {
 											{user?.name || user?.email}
 										</span>
 									</div>
-									<button
+									{/*<button
 										type="button"
 										onClick={async () => {
 											try {
@@ -84,7 +92,7 @@ export default function Header() {
 									>
 										<LogOut className="size-4" />
 										<span className="hidden sm:inline">Sign out</span>
-									</button>
+									</button>*/}
 								</div>
 							</>
 						)}
@@ -147,6 +155,18 @@ export default function Header() {
 							>
 								<Trophy size={20} />
 								<span className="font-medium">Leaderboard</span>
+							</Link>
+							<Link
+								to="/rosters"
+								onClick={() => setIsOpen(false)}
+								className="flex items-center gap-3 p-3 rounded-xl hover:bg-background/20 transition-colors mb-2"
+								activeProps={{
+									className:
+										"flex items-center gap-3 p-3 rounded-xl bg-primary/15 ring-1 ring-primary/25 transition-colors mb-2",
+								}}
+							>
+								<Users size={20} />
+								<span className="font-medium">Rosters</span>
 							</Link>
 
 							{user?.role === "admin" || user?.role === "data" ? (

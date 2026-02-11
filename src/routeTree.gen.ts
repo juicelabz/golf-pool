@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RostersRouteImport } from './routes/rosters'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -30,6 +31,11 @@ const TestRoute = TestRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RostersRoute = RostersRouteImport.update({
+  id: '/rosters',
+  path: '/rosters',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rosters': typeof RostersRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
   '/admin/users': typeof AdminUsersRouteWithChildren
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rosters': typeof RostersRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
   '/admin/users': typeof AdminUsersRouteWithChildren
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rosters': typeof RostersRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
   '/admin/users': typeof AdminUsersRouteWithChildren
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/reset-password'
+    | '/rosters'
     | '/signup'
     | '/test'
     | '/admin/users'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/reset-password'
+    | '/rosters'
     | '/signup'
     | '/test'
     | '/admin/users'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/reset-password'
+    | '/rosters'
     | '/signup'
     | '/test'
     | '/admin/users'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RostersRoute: typeof RostersRoute
   SignupRoute: typeof SignupRoute
   TestRoute: typeof TestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rosters': {
+      id: '/rosters'
+      path: '/rosters'
+      fullPath: '/rosters'
+      preLoaderRoute: typeof RostersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -303,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RostersRoute: RostersRoute,
   SignupRoute: SignupRoute,
   TestRoute: TestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
