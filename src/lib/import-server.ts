@@ -98,15 +98,17 @@ async function previewImportData({
 			continue;
 		}
 
-		// Check golfer exists
+		// Check golfer exists — unknown golfers are warnings (they can't be on
+		// any member's roster so their results don't affect scoring). The row is
+		// skipped but doesn't block the rest of the import.
 		if (!golferMap.has(golferName)) {
 			unknownGolfers.add(row.golferName);
 			validationIssues.push({
 				rowNumber: row.rowNumber,
 				kind: "validation",
-				severity: "error",
+				severity: "warning",
 				code: "UNKNOWN_GOLFER",
-				message: `Golfer "${row.golferName}" not found in database`,
+				message: `Golfer "${row.golferName}" not found in database — row skipped (not on any roster)`,
 				golferName: row.golferName,
 			});
 			continue;
@@ -145,9 +147,11 @@ async function previewImportData({
 	return preview;
 }
 
-export const previewImport = createServerFn({ method: "POST" }).handler(
-	previewImportData,
-);
+export const previewImport = createServerFn({ method: "POST" })
+	.inputValidator((data: { csvContent: string }) => data)
+	.handler(async ({ data }) => {
+		return await previewImportData({ data });
+	});
 
 async function commitImportData({
 	data,
@@ -247,6 +251,8 @@ async function commitImportData({
 	};
 }
 
-export const commitImport = createServerFn({ method: "POST" }).handler(
-	commitImportData,
-);
+export const commitImport = createServerFn({ method: "POST" })
+	.inputValidator((data: { results: TournamentResult[] }) => data)
+	.handler(async ({ data }) => {
+		return await commitImportData({ data });
+	});

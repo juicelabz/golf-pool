@@ -303,23 +303,35 @@ function DataImport() {
 
 							{/* Preview Section */}
 							{preview && (
-								<div className="rounded-xl border border-border/70 bg-background/20 p-4">
+								<div className="rounded-xl border border-border/70 bg-background/20 p-4 space-y-4">
 									<div className="flex items-center justify-between gap-3">
 										<h3 className="text-sm font-black tracking-tight">
 											Import Preview
 										</h3>
 										<Badge
-											variant={preview.canCommit ? "default" : "destructive"}
+											variant={
+												preview.summary.errors > 0
+													? "destructive"
+													: preview.summary.warnings > 0
+														? "outline"
+														: "default"
+											}
 											className={
-												preview.canCommit
-													? "bg-primary/15 border-primary/30"
-													: ""
+												preview.summary.errors > 0
+													? ""
+													: preview.summary.warnings > 0
+														? "border-yellow-500/40 text-yellow-600"
+														: "bg-primary/15 border-primary/30"
 											}
 										>
-											{preview.canCommit ? "Ready to import" : "Has errors"}
+											{preview.summary.errors > 0
+												? "Has errors"
+												: preview.summary.warnings > 0
+													? "Ready with warnings"
+													: "Ready to import"}
 										</Badge>
 									</div>
-									<div className="mt-3 space-y-2 text-sm">
+									<div className="space-y-2 text-sm">
 										<div className="flex justify-between">
 											<span>Total rows:</span>
 											<span className="font-semibold">
@@ -332,21 +344,89 @@ function DataImport() {
 												{preview.summary.validRows}
 											</span>
 										</div>
-										<div className="flex justify-between">
-											<span>Errors:</span>
-											<span className="font-semibold text-red-600">
-												{preview.summary.errors}
-											</span>
-										</div>
-										<div className="flex justify-between">
-											<span>Warnings:</span>
-											<span className="font-semibold text-yellow-600">
-												{preview.summary.warnings}
-											</span>
-										</div>
+										{preview.summary.errors > 0 && (
+											<div className="flex justify-between">
+												<span>Errors:</span>
+												<span className="font-semibold text-red-600">
+													{preview.summary.errors}
+												</span>
+											</div>
+										)}
+										{preview.summary.warnings > 0 && (
+											<div className="flex justify-between">
+												<span>Skipped:</span>
+												<span className="font-semibold text-yellow-600">
+													{preview.summary.warnings}
+												</span>
+											</div>
+										)}
 									</div>
+
+									{/* Per-row issue details */}
+									{preview.issues.length > 0 && (
+										<div className="space-y-2">
+											<h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+												Issues
+											</h4>
+											{preview.issues.map((issue, idx) => (
+												<div
+													key={`issue-${issue.rowNumber}-${issue.code}-${String(idx)}`}
+													className={`rounded-lg border px-3 py-2 text-xs ${
+														issue.severity === "error"
+															? "border-destructive/40 bg-destructive/10 text-destructive"
+															: "border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
+													}`}
+												>
+													<div className="flex items-start justify-between gap-2">
+														<span className="font-semibold">
+															Row {issue.rowNumber}
+														</span>
+														<Badge
+															variant="outline"
+															className={`text-[10px] px-1.5 py-0 ${
+																issue.severity === "error"
+																	? "border-destructive/30 text-destructive"
+																	: "border-yellow-500/30 text-yellow-600"
+															}`}
+														>
+															{issue.code.replaceAll("_", " ")}
+														</Badge>
+													</div>
+													<p className="mt-1">{issue.message}</p>
+												</div>
+											))}
+										</div>
+									)}
+
+									{/* Unknown golfers callout */}
+									{preview.summary.unknownGolfers.length > 0 && (
+										<div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-2.5 text-xs">
+											<p className="font-semibold text-yellow-700 dark:text-yellow-400">
+												Golfers not in the pool ({preview.summary.unknownGolfers.length}):
+											</p>
+											<p className="mt-1 text-yellow-700/80 dark:text-yellow-400/80">
+												{preview.summary.unknownGolfers.join(", ")}
+											</p>
+											<p className="mt-1.5 text-yellow-700/60 dark:text-yellow-400/60">
+												These rows will be skipped. If a golfer should be tracked, add them to the golfer list first.
+											</p>
+										</div>
+									)}
+
+									{/* Unknown tournaments callout */}
+									{preview.summary.unknownTournaments.length > 0 && (
+										<div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs">
+											<p className="font-semibold text-destructive">
+												Unknown tournaments ({preview.summary.unknownTournaments.length}):
+											</p>
+											<p className="mt-1 text-destructive/80">
+												{preview.summary.unknownTournaments.join(", ")}
+											</p>
+										</div>
+									)}
+
 									{preview.canCommit && (
-										<div className="mt-4 pt-4 border-t border-border/70">
+										<div className="pt-4 border-t border-border/70">
 											<Button
 												onClick={handleCommit}
 												disabled={uploadStatus === "uploading"}
@@ -354,7 +434,9 @@ function DataImport() {
 											>
 												{uploadStatus === "uploading"
 													? "Importing..."
-													: "Commit Import"}
+													: preview.summary.warnings > 0
+														? `Import ${preview.summary.validRows} valid rows`
+														: "Commit Import"}
 											</Button>
 										</div>
 									)}
