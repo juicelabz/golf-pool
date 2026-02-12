@@ -56,27 +56,48 @@ function Signup() {
 			return;
 		}
 
-		setLoading(true);
-
-		try {
-			const result = await authClient.signUp.email({
-				name,
+		await authClient.signUp.email(
+			{
 				email,
 				password,
-			});
+				name,
+				callbackURL: "/leaderboard",
+			},
+			{
+				onRequest: (_ctx) => {
+					setLoading(true);
+				},
+				onSuccess: async (_ctx) => {
+					setLoading(false);
+					await refetch();
+					router.navigate({ to: "/leaderboard" });
+				},
+				onError: (ctx) => {
+					setLoading(false);
+					alert(ctx.error.message);
+				},
+			},
+		);
 
-			if (result.error) {
-				setError("Not allowed.");
-			} else {
-				setError(null);
-				await refetch();
-				router.navigate({ to: "/leaderboard" });
-			}
-		} catch {
-			setError("Not allowed.");
-		} finally {
-			setLoading(false);
-		}
+		//try {
+		//	const result = await authClient.signUp.email({
+		//		name,
+		//		email,
+		//		password,
+		//	});
+
+		//	if (result.error) {
+		//		setError("Not allowed.");
+		//	} else {
+		//		setError(null);
+		//		await refetch();
+		//		router.navigate({ to: "/leaderboard" });
+		//	}
+		//} catch {
+		//	setError("Not allowed.");
+		//} finally {
+		//	setLoading(false);
+		//}
 	};
 
 	return (

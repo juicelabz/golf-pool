@@ -11,9 +11,10 @@ count.txt
 .output
 .vinxi
 todos.json
+.cursor/
 
 # Data files
-data/
+#data/
 *.db
 
 whitelist.json

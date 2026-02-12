@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { authClient } from "@/lib/auth-client";
 import { resolvePostLoginRedirect } from "@/lib/auth-redirect";
 import { requireAuth } from "@/lib/session";
 import { useAuth } from "@/lib/use-auth";
@@ -36,7 +37,6 @@ function Login() {
 	const emailId = useId();
 	const passwordId = useId();
 	const { redirect } = Route.useSearch();
-	const { signIn, refetch } = useAuth();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -48,24 +48,45 @@ function Login() {
 		setError(null);
 		setLoading(true);
 
-		try {
-			const result = await signIn(email, password);
+		console.log(email, password);
 
-			if (result.error) {
-				setError(
-					result.error.message ||
-						"We couldn't sign you in. Check your email and password.",
-				);
-			} else {
-				await refetch();
-				const redirectTo = resolvePostLoginRedirect(redirect);
-				window.location.assign(redirectTo);
-			}
-		} catch (err: unknown) {
-			setError((err as Error)?.message || "Sign-in failed. Please try again.");
-		} finally {
-			setLoading(false);
-		}
+		await authClient.signIn.email(
+			{
+				email: email,
+				password: password,
+			},
+			{
+				onRequest: (_ctx) => {
+					setLoading(true);
+				},
+				onSuccess: (_ctx) => {
+					setLoading(false);
+				},
+				onError: (ctx) => {
+					setLoading(false);
+					alert(ctx.error.message);
+				},
+			},
+		);
+
+		//try {
+		//	const result = await signIn(email, password);
+
+		//	if (result.error) {
+		//		setError(
+		//			result.error.message ||
+		//				"We couldn't sign you in. Check your email and password.",
+		//		);
+		//	} else {
+		//		await refetch();
+		//		const redirectTo = resolvePostLoginRedirect(redirect);
+		//		window.location.assign(redirectTo);
+		//	}
+		//} catch (err: unknown) {
+		//	setError((err as Error)?.message || "Sign-in failed. Please try again.");
+		//} finally {
+		//	setLoading(false);
+		//}
 	};
 
 	return (

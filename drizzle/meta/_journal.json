@@ -15,6 +15,13 @@
       "when": 1770065601928,
       "tag": "0001_puzzling_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770870000000,
+      "tag": "0002_rebuild_members_fk_user",
+      "breakpoints": true
     }
   ]
 }

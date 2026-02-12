@@ -168,65 +168,65 @@ function Leaderboard() {
 													!!user?.id && member.userId === user.id;
 
 												return (
-												<tr
-													key={member.id}
-													className={cn(
-														"border-b border-border/50 transition-colors",
-														isCurrentUser
-															? "bg-primary/10 hover:bg-primary/15 ring-1 ring-inset ring-primary/25"
-															: "hover:bg-background/15",
-													)}
-												>
-													<td className="py-4 px-6">
-														<div
-															className={cn(
-																"flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold",
-																isCurrentUser
-																	? "bg-primary/20 ring-1 ring-primary/40 text-primary"
-																	: "bg-background/25 ring-1 ring-border/60",
-															)}
-														>
-															{rank}
-														</div>
-													</td>
-													<td className="py-4 px-6">
-														<div
-															className={cn(
-																"font-semibold",
-																isCurrentUser
-																	? "text-primary"
-																	: "text-foreground",
-															)}
-														>
-															{member.name}
-															{isCurrentUser && (
-																<span className="ml-2 text-[10px] uppercase tracking-wider font-bold text-primary/70">
-																	You
-																</span>
-															)}
-														</div>
-													</td>
-													<td className="py-4 px-6 text-center">
-														<div className="text-xl md:text-2xl font-black text-primary">
-															{member.totalPoints.toLocaleString()}
-														</div>
-													</td>
-													<td className="py-4 px-6 text-center text-muted-foreground">
-														{member.segment1Points}
-													</td>
-													<td className="py-4 px-6 text-center text-muted-foreground">
-														{member.segment2Points}
-													</td>
-													<td className="py-4 px-6 text-center text-muted-foreground">
-														{member.segment3Points}
-													</td>
-													<td className="py-4 px-6 text-center text-muted-foreground">
-														{member.segment4Points}
-													</td>
-													<td className="py-4 px-6 text-center text-muted-foreground">
-														{member.segment5Points}
-													</td>
-												</tr>
+													<tr
+														key={member.id}
+														className={cn(
+															"border-b border-border/50 transition-colors",
+															isCurrentUser
+																? "bg-primary/10 hover:bg-primary/15 ring-1 ring-inset ring-primary/25"
+																: "hover:bg-background/15",
+														)}
+													>
+														<td className="py-4 px-6">
+															<div
+																className={cn(
+																	"flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold",
+																	isCurrentUser
+																		? "bg-primary/20 ring-1 ring-primary/40 text-primary"
+																		: "bg-background/25 ring-1 ring-border/60",
+																)}
+															>
+																{rank}
+															</div>
+														</td>
+														<td className="py-4 px-6">
+															<div
+																className={cn(
+																	"font-semibold",
+																	isCurrentUser
+																		? "text-primary"
+																		: "text-foreground",
+																)}
+															>
+																{member.name}
+																{isCurrentUser && (
+																	<span className="ml-2 text-[10px] uppercase tracking-wider font-bold text-primary/70">
+																		You
+																	</span>
+																)}
+															</div>
+														</td>
+														<td className="py-4 px-6 text-center">
+															<div className="text-xl md:text-2xl font-black text-primary">
+																{member.totalPoints.toLocaleString()}
+															</div>
+														</td>
+														<td className="py-4 px-6 text-center text-muted-foreground">
+															{member.segment1Points}
+														</td>
+														<td className="py-4 px-6 text-center text-muted-foreground">
+															{member.segment2Points}
+														</td>
+														<td className="py-4 px-6 text-center text-muted-foreground">
+															{member.segment3Points}
+														</td>
+														<td className="py-4 px-6 text-center text-muted-foreground">
+															{member.segment4Points}
+														</td>
+														<td className="py-4 px-6 text-center text-muted-foreground">
+															{member.segment5Points}
+														</td>
+													</tr>
 												);
 											})}
 										</tbody>
